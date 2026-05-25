@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>be. — Registro Concluído</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #000000;
+            --bg-card: #0A0A0A;
+            --border-color: #222222;
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+            --accent: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 400;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            line-height: 1;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .btn-home {
+            background-color: var(--accent);
+            color: #000000;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.8rem 2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .btn-home:hover {
+            background-color: #000000;
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="brand-logo">be.</div>
+    <h2>Registro Recebido</h2>
+    <p>
+        Obrigado(a), <strong>{{ nome }}</strong>!<br>
+        Seu perfil foi registrado com sucesso e integrado ao ecossistema da <strong>be.</strong>.<br><br>
+        Nossa equipe de curadoria irá analisar seu portfólio e entraremos em contato via WhatsApp ou E-mail para futuras campanhas com nossos clientes parceiros.
+    </p>
+    <a href="/cadastro" class="btn-home">Novo Registro</a>
+</div>
+
+</body>
+</html>

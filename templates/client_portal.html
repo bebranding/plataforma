@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>be. — Portal do Cliente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #000000;
+            --bg-card: #0A0A0A;
+            --primary: #FFFFFF;
+            --primary-rgb: 255, 255, 255;
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+            --border-color: #222222;
+            --success: #34C759;
+            --warn: #FFCC00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        /* Portal Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .brand-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            line-height: 1;
+        }
+
+        .brand-section p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .client-badge {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Top Progress Ring & KPI banner */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kpis-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .kpis-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+        }
+
+        .kpi-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .kpi-block .label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-block .val {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .kpi-block .desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .kpi-block .desc span {
+            color: var(--primary);
+        }
+
+        .progress-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        /* Circular Progress */
+        .progress-circle {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 0deg, var(--border-color) 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.5s ease;
+        }
+
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            background-color: var(--bg-card);
+        }
+
+        .progress-circle-val {
+            position: relative;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            z-index: 10;
+        }
+
+        /* Main Vitrine Grid list */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+        }
+
+        /* Category Filter Tags */
+        .filter-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .filter-tag {
+            background-color: #050505;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tag:hover, .filter-tag.active {
+            color: #000000;
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Visual Showcase Grid Cards */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .showcase-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .showcase-card:hover {
+            border-color: var(--primary);
+        }
+
+        .card-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #000000;
+            font-size: 1.1rem;
+        }
+
+        .card-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .card-info p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-category {
+            background: #111111;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .badge-status {
+            border: 1px solid var(--border-color);
+        }
+
+        .badge-status.confirmado {
+            background: rgba(52, 199, 89, 0.05);
+            color: var(--success);
+            border-color: rgba(52, 199, 89, 0.2);
+        }
+
+        .badge-status.publicado {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .badge-status.pendente {
+            background: rgba(255, 204, 0, 0.05);
+            color: var(--warn);
+            border-color: rgba(255, 204, 0, 0.2);
+        }
+
+        .card-niche {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.8rem;
+        }
+
+        .btn-reels {
+            background-color: var(--primary);
+            color: #000000;
+            text-decoration: none;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: block;
+            margin-top: auto;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-reels:hover {
+            background-color: #000000;
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+
+        .btn-disabled {
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Portal Header -->
+    <header>
+        <div class="brand-section">
+            <h1>be.</h1>
+            <p>Influence & Branding</p>
+        </div>
+        <div class="client-badge">Painel do Cliente</div>
+    </header>
+
+    <!-- Top Dashboard row -->
+    <div class="dashboard-row">
+        <!-- KPIs -->
+        <div class="kpis-card">
+            <div class="kpi-block">
+                <span class="label">Time de Creators</span>
+                <span class="val" id="camp-creators">0</span>
+                <span class="desc">Selecionados para o projeto</span>
+            </div>
+            <div class="kpi-block">
+                <span class="label">Alcance Consolidado</span>
+                <span class="val" id="camp-reach">0</span>
+                <span class="desc">Seguidores no Instagram</span>
+            </div>
+            <div class="kpi-block">
+                <span class="label">Postagens Feitas</span>
+                <span class="val" id="camp-posts" style="color: var(--success)">0</span>
+                <span class="desc">Conteúdos publicados</span>
+            </div>
+        </div>
+
+        <!-- Progress ring -->
+        <div class="progress-card">
+            <div class="progress-circle" id="prog-circle">
+                <div class="progress-circle-val" id="prog-circle-val">0%</div>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">
+                Conclusão Geral
+            </span>
+        </div>
+    </div>
+
+    <!-- Category filters -->
+    <div class="section-header">
+        <h3 class="section-title">Andamento do Projeto — {{ project_name }}</h3>
+        <div class="input-group" style="max-width: 280px; width: 100%;">
+            <input type="text" id="client-search" placeholder="Buscar por nome..." oninput="filterClientShowcase()" style="background-color: #050505; border-color: var(--border-color); padding: 0.5rem 1rem; border-radius: 8px; color: var(--text-main); font-size: 0.9rem; outline: none; width: 100%;">
+        </div>
+    </div>
+
+    <div class="filter-container">
+        <button class="filter-tag active" onclick="filterCategory('all')" id="filter-all">Todos Creators</button>
+        <button class="filter-tag" onclick="filterCategory('Macro')" id="filter-Macro">Macro Influencers</button>
+        <button class="filter-tag" onclick="filterCategory('Mid')" id="filter-Mid">Mid Influencers</button>
+        <button class="filter-tag" onclick="filterCategory('Micro')" id="filter-Micro">Micro Influencers</button>
+        <button class="filter-tag" onclick="filterCategory('Nano')" id="filter-Nano">Nano Influencers</button>
+    </div>
+
+    <!-- Visual Showcase Grid -->
+    <div class="showcase-grid" id="client-showcase-grid">
+        <!-- Dynamic showcase cards in real time -->
+    </div>
+</div>
+
+<script>
+    const projectId = {{ project_id }};
+    let activeCategory = "all";
+    let campaignInfluencers = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadCampaignData();
+    });
+
+    function loadCampaignData() {
+        fetch(`/api/projects/${projectId}/influencers`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    campaignInfluencers = data.influencers;
+                    recalculateStats();
+                    renderShowcase();
+                }
+            });
+    }
+
+    function recalculateStats() {
+        const total = campaignInfluencers.length;
+        let reach = 0;
+        let posts = 0;
+        let progressSum = 0;
+
+        campaignInfluencers.forEach(inf => {
+            reach += inf.seguidores_ig || 0;
+            
+            if (inf.status === 'Reels publicado' || inf.status === 'Concluído') {
+                posts++;
+            }
+
+            const status = inf.status;
+            let statusPercent = 0;
+            if (status === 'Contato enviado') statusPercent = 14;
+            else if (status === 'Aguardando resposta') statusPercent = 28;
+            else if (status === 'Confirmado') statusPercent = 43;
+            else if (status === 'Kit enviado') statusPercent = 57;
+            else if (status === 'Reels publicado') statusPercent = 85;
+            else if (status === 'Concluído') statusPercent = 100;
+            
+            progressSum += statusPercent;
+        });
+
+        const generalProgress = total > 0 ? Math.round(progressSum / total) : 0;
+
+        // Populate fields
+        document.getElementById("camp-creators").innerText = total;
+        document.getElementById("camp-reach").innerText = formatNumberThousands(reach);
+        document.getElementById("camp-posts").innerText = posts;
+        
+        // Progress ring logic
+        document.getElementById("prog-circle-val").innerText = `${generalProgress}%`;
+        
+        // Angle conic gradient
+        const angle = Math.round((generalProgress / 100) * 360);
+        document.getElementById("prog-circle").style.background = `conic-gradient(var(--primary) ${angle}deg, var(--border-color) ${angle}deg)`;
+    }
+
+    function formatNumberThousands(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function filterCategory(cat) {
+        activeCategory = cat;
+        
+        // Toggle Tag styles
+        document.querySelectorAll(".filter-tag").forEach(tag => tag.classList.remove("active"));
+        document.getElementById(`filter-${cat}`).classList.add("active");
+
+        renderShowcase();
+    }
+
+    function renderShowcase() {
+        const grid = document.getElementById("client-showcase-grid");
+        grid.innerHTML = "";
+
+        const query = document.getElementById("client-search").value.toLowerCase();
+        
+        const filtered = campaignInfluencers.filter(inf => {
+            const matchCat = activeCategory === "all" || inf.categoria_ig === activeCategory;
+            const nameMatch = (inf.nome || "").toLowerCase().includes(query) || inf.instagram.toLowerCase().includes(query);
+            return matchCat && nameMatch;
+        });
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">Nenhum criador de conteúdo nesta categoria.</div>`;
+            return;
+        }
+
+        filtered.forEach(inf => {
+            const card = document.createElement("div");
+            card.className = "showcase-card";
+
+            const initial = inf.nome ? inf.nome[0] : "@";
+            
+            let badgeClass = "badge-status pendente";
+            let displayStatus = inf.status || "A contatar";
+            if (displayStatus === "Confirmado" || displayStatus === "Kit enviado") {
+                badgeClass = "badge-status confirmado";
+            } else if (displayStatus === "Reels publicado" || displayStatus === "Concluído") {
+                badgeClass = "badge-status publicado";
+            }
+
+            // Reels Action Button
+            let reelsBtn = `<a href="${inf.link_reels}" target="_blank" class="btn-reels">Assistir Reels</a>`;
+            if (!inf.link_reels || inf.link_reels.trim() === "") {
+                reelsBtn = `<a class="btn-reels btn-disabled">Aguardando Reels</a>`;
+            }
+
+            card.innerHTML = `
+                <div class="card-profile">
+                    <div class="avatar">${initial}</div>
+                    <div class="card-info">
+                        <h4>${inf.nome || "A Carregar..."}</h4>
+                        <p>${inf.instagram}</p>
+                    </div>
+                </div>
+                <div class="badge-container">
+                    <span class="badge badge-category">${inf.categoria_ig || "Nano"}</span>
+                    <span class="badge ${badgeClass}">${displayStatus}</span>
+                </div>
+                <div class="card-niche">
+                    <strong>Nicho:</strong> ${inf.nicho || "Lifestyle"}<br>
+                    <strong>Alcance:</strong> ${inf.seguidores_ig_formatted || "0"} seguidores
+                </div>
+                ${reelsBtn}
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function filterClientShowcase() {
+        renderShowcase();
+    }
+</script>
+
+</body>
+</html>

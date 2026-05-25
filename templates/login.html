@@ -1,44 +1,156 @@
-import openpyxl
-from openpyxl.styles import Font, PatternFill
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>be.branding — Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #000000;
+            --bg-card: #0A0A0A;
+            --border-color: #222222;
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+            --accent: #FFFFFF;
+            --error: #FF3B30;
+        }
 
-wb = openpyxl.Workbook()
-ws = wb.active
-ws.title = "Todas"
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
 
-headers = [
-    "Instagram", "Nome", "Nicho", "Email", "WhatsApp", 
-    "Endereço", "Cachê", "Data Contato", "Resposta", 
-    "Envio Kit", "Data Publicação", "Link Reels", "Observações"
-]
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
 
-# Write headers
-for col_num, header in enumerate(headers, 1):
-    cell = ws.cell(row=1, column=col_num, value=header)
-    cell.font = Font(bold=True, color="FFFFFF")
-    cell.fill = PatternFill(start_color="333333", end_color="333333", fill_type="solid")
+        .login-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
 
-# Add some dummy data to show format
-dummy_data = [
-    ["@exemplo1", "Ana Silva", "Beleza", "ana@email.com", "11999999999", "Rua A, 123 - SP", "1500", "10/05/2026", "Aceitou", "12/05/2026", "15/05/2026", "instagram.com/reels/...", "Gosta de produtos veganos"],
-    ["@exemplo_2", "João Pedro", "Moda", "joao@email.com", "21988888888", "Av B, 456 - RJ", "3000", "", "", "", "", "", ""]
-]
+        .brand-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            font-weight: 400;
+            color: var(--text-main);
+            line-height: 1;
+            margin-bottom: 0.2rem;
+        }
 
-for row_num, row_data in enumerate(dummy_data, 2):
-    for col_num, value in enumerate(row_data, 1):
-        ws.cell(row=row_num, column=col_num, value=value)
+        .brand-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2.5rem;
+        }
 
-# Adjust column widths
-for col in ws.columns:
-    max_length = 0
-    column = col[0].column_letter
-    for cell in col:
-        try:
-            if len(str(cell.value)) > max_length:
-                max_length = len(str(cell.value))
-        except:
-            pass
-    adjusted_width = (max_length + 2)
-    ws.column_dimensions[column].width = adjusted_width
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
 
-wb.save("static/template_importacao_criadores.xlsx")
-print("Template created!")
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+
+        input {
+            background-color: #000000;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--text-main);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .error-alert {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-bottom: 1.2rem;
+            text-align: left;
+            border-left: 2px solid var(--error);
+            padding-left: 0.5rem;
+        }
+
+        .btn-submit {
+            background-color: var(--accent);
+            color: #000000;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.9rem 2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #000000;
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="brand-logo">be.</div>
+    <div class="brand-sub">Influence & Campaign CRM</div>
+
+    {% if error %}
+        <div class="error-alert">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form action="/login" method="POST">
+        <div class="form-group">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" name="username" placeholder="Ex: admin" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Entrar</button>
+    </form>
+</div>
+
+</body>
+</html>

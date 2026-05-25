@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>be. — Cadastro de Criador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #000000;
+            --bg-card: #0A0A0A;
+            --border-color: #222222;
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+            --accent: #FFFFFF;
+            --accent-muted: #CCCCCC;
+            --error: #FF3B30;
+            --success: #34C759;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 580px;
+        }
+
+        /* Branding logo */
+        .brand {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .brand h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .brand p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Form Card */
+        .form-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 480px) {
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+
+        .form-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.8rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="email"], select, textarea {
+            background-color: #000000;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
+            border-color: var(--text-main);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Buttons */
+        .btn-submit {
+            background-color: var(--accent);
+            color: #000000;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.9rem 2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: #000000;
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Brand Header -->
+    <div class="brand">
+        <h1>be.</h1>
+        <p>Influence & Branding Registry</p>
+    </div>
+
+    <!-- Registration Card Form -->
+    <div class="form-card">
+        <h2 class="form-title">Cadastro de Criador</h2>
+        
+        <form action="/cadastro" method="POST">
+            <!-- Nome Completo -->
+            <div class="form-group">
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" name="nome" placeholder="Ex: Larissa Vasconcelos" required>
+            </div>
+
+            <!-- Instagram / TikTok Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="instagram">Instagram</label>
+                    <input type="text" id="instagram" name="instagram" placeholder="Ex: @larifvasconcelos" required>
+                </div>
+                <div class="form-group">
+                    <label for="tiktok">TikTok (Opcional)</label>
+                    <input type="text" id="tiktok" name="tiktok" placeholder="Ex: @larifvasconcelos">
+                </div>
+            </div>
+
+            <!-- E-mail / WhatsApp Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Ex: contato@larif.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="whatsapp">WhatsApp / Tel</label>
+                    <input type="text" id="whatsapp" name="whatsapp" placeholder="Ex: (81) 99999-9999" required>
+                </div>
+            </div>
+
+            <!-- Cidade & Estado -->
+            <div class="form-group">
+                <label for="cidade_estado">Cidade & Estado</label>
+                <input type="text" id="cidade_estado" name="cidade_estado" placeholder="Ex: Recife - PE" required>
+            </div>
+
+            <!-- Nicho / Já Usou Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nicho">Nicho Principal</label>
+                    <select id="nicho" name="nicho" required>
+                        <option value="Skincare">Skincare</option>
+                        <option value="Beleza">Beleza</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Saúde / Nutrição">Saúde / Nutrição</option>
+                        <option value="Lifestyle">Lifestyle</option>
+                        <option value="Viagem">Viagem</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ja_usou">Já usou nossas marcas?</label>
+                    <select id="ja_usou" name="ja_usou">
+                        <option value="Não">Não</option>
+                        <option value="Sim">Sim</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Gabi Segue -->
+            <div class="form-group">
+                <label for="gabi_segue">Gabi te segue?</label>
+                <select id="gabi_segue" name="gabi_segue">
+                    <option value="Não">Não</option>
+                    <option value="Sim">Sim</option>
+                </select>
+            </div>
+
+            <!-- Brief Pitch / Presentation -->
+            <div class="form-group">
+                <label for="pitch">Apresentação & Como você criaria conteúdo</label>
+                <textarea id="pitch" name="pitch" rows="4" placeholder="Escreva uma breve mensagem de como você criaria conteúdo para as nossas marcas e empresas parceiras..." required></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn-submit">Enviar Registro</button>
+        </form>
+    </div>
+
+    <!-- Footnote -->
+    <div class="footer-note">
+        be.branding © 2026. Todos os direitos reservados.
+    </div>
+</div>
+
+</body>
+</html>

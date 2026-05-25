@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>be. — Influence & Campaign CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #000000;
+            --bg-card: #0A0A0A;
+            --bg-hover: #121212;
+            --primary: #FFFFFF;
+            --primary-rgb: 255, 255, 255;
+            --text-main: #FFFFFF;
+            --text-muted: #888888;
+            --border-color: #222222;
+            --error: #FF3B30;
+            --success: #34C759;
+            --warn: #FFCC00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* App Layout Container */
+        .app-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            background-color: #000000;
+            border-right: 1px solid var(--border-color);
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .brand h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            line-height: 1;
+            padding-left: 0.5rem;
+        }
+
+        .brand p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-left: 0.5rem;
+            margin-top: 0.2rem;
+        }
+
+        nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex-grow: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text-main);
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+        }
+
+        .nav-link.active {
+            border-left: 3px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding-left: 0.8rem;
+        }
+
+        /* Main Workspace Content */
+        main {
+            padding: 2.5rem 3.5rem;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            gap: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header-title h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.2rem;
+        }
+
+        /* Quick Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stat-card .footer {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .stat-card .footer.highlight {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Tab Content Containers */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Panels & Cards styling */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Forms, Inputs, Buttons */
+        .btn {
+            background-color: var(--primary);
+            color: #000000;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background-color: #000000;
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+
+        .btn:disabled {
+            background-color: #222222;
+            color: #555555;
+            border-color: #222222;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-muted);
+        }
+
+        .btn-danger {
+            background-color: rgba(255, 59, 48, 0.05);
+            color: var(--error);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+
+        .btn-danger:hover {
+            background-color: var(--error);
+            color: var(--text-main);
+            border-color: var(--error);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"], select, textarea {
+            background-color: #000000;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--text-main);
+        }
+
+        /* Drag and Drop Importer Zone */
+        .upload-zone {
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--text-main);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-zone h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-zone p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Vitrine / Showcase Grid Cards */
+        .influencer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .influencer-card {
+            background: #050505;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .influencer-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--text-main);
+        }
+
+        .creator-photo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .creator-photo-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #000000;
+            font-size: 1.1rem;
+        }
+
+        .card-info h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .card-info p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-category {
+            background: #111111;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .card-stats div {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .card-stats span.label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .card-stats span.val {
+            font-weight: 600;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Campaign/Project Details Manager Workspace */
+        .campaign-workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .kpis-banner {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .kpis-banner {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .kpi-block {
+            background: #050505;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .kpi-block h5 {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .kpi-block .val {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* Interactive campaign spreadsheet-style table */
+        .sheet-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 1000px;
+        }
+
+        .sheet-table th {
+            background-color: #050505;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .sheet-table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #000000;
+        }
+
+        .sheet-table tr:hover td {
+            background-color: #080808;
+        }
+
+        /* Console styling */
+        .console {
+            background-color: #020202;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            height: 150px;
+            overflow-y: auto;
+            padding: 0.8rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #FFFFFF;
+            line-height: 1.4;
+            margin-top: 1rem;
+        }
+
+        .console-line {
+            margin-bottom: 0.2rem;
+        }
+
+        /* Shared / Share Link Banner */
+        .share-banner {
+            background: #050505;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .share-banner-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .share-banner-info p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        /* Tab togglers */
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: #050505;
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .view-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .view-toggle-btn.active {
+            background-color: #111111;
+            color: var(--text-main);
+        }
+
+        /* Simple Modal overlay for intuitive popup form editing */
+        .workflow-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 650px;
+            padding: 2rem;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .modal-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal-form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* ---- Bulk Selection Mode ---- */
+        .card-checkbox-overlay {
+            position: absolute;
+            top: 0.6rem;
+            left: 0.6rem;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .card-delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(255,59,48,0.12);
+            border: 1px solid rgba(255,59,48,0.25);
+            color: var(--error);
+            font-size: 0.75rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.15s ease;
+        }
+
+        .card-delete-btn:hover {
+            background: var(--error);
+            color: #fff;
+        }
+
+        #creators-photo-grid:hover .card-delete-btn {
+            display: flex;
+        }
+
+        #creators-photo-grid.selection-mode .card-checkbox-overlay {
+            display: flex;
+        }
+
+        #creators-photo-grid.selection-mode .card-delete-btn {
+            display: none !important;
+        }
+
+        #creators-photo-grid.selection-mode .creator-photo-card {
+            cursor: pointer;
+        }
+
+        .creator-photo-card.card-selected {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .creator-photo-card.card-selected .card-checkbox-overlay {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* ---- Bulk Action Bar (floating) ---- */
+        .bulk-action-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #111111;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 0.9rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 5000;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            white-space: nowrap;
+        }
+
+        .bulk-action-bar.visible {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .bulk-action-bar .selection-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .bulk-action-bar .selection-label strong {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside>
+        <div class="brand">
+            <h1>be.</h1>
+            <p>Influence & Branding</p>
+        </div>
+        <nav>
+            {% if session_role == 'master' %}
+            <a class="nav-link active" onclick="switchTab('home')" id="tab-home-btn">
+                Painel Geral
+            </a>
+            <a class="nav-link" onclick="switchTab('creators')" id="tab-creators-btn">
+                Criadores
+            </a>
+            <a class="nav-link" onclick="switchTab('database')" id="tab-database-btn">
+                Importar Planilha
+            </a>
+            <a class="nav-link" onclick="switchTab('campaigns')" id="tab-campaigns-btn">
+                Campanhas / Clientes
+            </a>
+            <a class="nav-link" onclick="switchTab('new-project')" id="tab-new-project-btn">
+                Nova Campanha
+            </a>
+            <a class="nav-link" onclick="switchTab('crawling')" id="tab-crawling-btn">
+                Crawler Automático
+            </a>
+            <a class="nav-link" onclick="switchTab('settings')" id="tab-settings-btn">
+                Configurações
+            </a>
+            {% else %}
+            <a class="nav-link" onclick="switchTab('creators')" id="tab-creators-btn">
+                Criadores
+            </a>
+            <a class="nav-link active" onclick="switchTab('campaigns')" id="tab-campaigns-btn">
+                Minha Campanha
+            </a>
+            {% endif %}
+        </nav>
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+            <a href="/logout" class="nav-link" style="color: var(--error); border-color: rgba(255, 59, 48, 0.1); background-color: rgba(255, 59, 48, 0.02); justify-content: center; font-weight: 600;">Sair da Conta</a>
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">be. © 2026</p>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main>
+        <!-- Header -->
+        <header>
+            <div class="header-title">
+                {% if session_role == 'master' %}
+                <h2 id="header-main-title">Cadastrar Criador</h2>
+                <p id="header-sub-title">Seu hub central de mapeamento e curadoria de criadores.</p>
+                {% else %}
+                <h2 id="header-main-title">Minha Campanha</h2>
+                <p id="header-sub-title">Gerencie o andamento do seu projeto e controle os envios e publicações.</p>
+                {% endif %}
+            </div>
+            {% if session_role == 'master' %}
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" id="global-search" placeholder="Buscar criador..." oninput="filterInfluencers()">
+            </div>
+            {% endif %}
+        </header>
+
+        {% if session_role == 'master' %}
+        <!-- Dynamic Overall stats -->
+        <div class="stats-grid" id="dashboard-stats-grid">
+            <div class="stat-card">
+                <h3>Criadores Cadastrados</h3>
+                <div class="value" id="stat-total">--</div>
+                <div class="footer highlight">Perfis ativos no banco</div>
+            </div>
+            <div class="stat-card">
+                <h3>Alcance Consolidado</h3>
+                <div class="value" id="stat-reach">--</div>
+                <div class="footer">Seguidores totais</div>
+            </div>
+            <div class="stat-card">
+                <h3>Clientes Ativos</h3>
+                <div class="value" id="stat-projects">--</div>
+                <div class="footer">Campanhas monitoradas</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ================= TAB: HOME ================= -->
+        {% if session_role == 'master' %}
+        <div class="tab-content active" id="tab-home">
+            <div class="stats-grid" id="home-stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <h3>Campanhas Ativas</h3>
+                    <div class="value" id="home-stat-projects">--</div>
+                    <div class="footer highlight">Projetos em andamento</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Creators Mapeados</h3>
+                    <div class="value" id="home-stat-creators">--</div>
+                    <div class="footer">No banco geral</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Alcance Consolidado</h3>
+                    <div class="value" id="home-stat-reach">--</div>
+                    <div class="footer">Seguidores somados</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <div class="panel-title">Resumo do Status das Campanhas</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">Visão geral de andamento e entrega de kits de todas as campanhas ativas.</p>
+                    </div>
+                </div>
+                <div class="influencer-grid" id="home-campaigns-grid"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ================= TAB: CREATORS ================= -->
+        <div class="tab-content" id="tab-creators">
+            <div class="panel">
+                <div class="panel-header" style="margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div class="panel-title" style="font-family: 'Sora', sans-serif;">Banco de Criadores</div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">Todos os criadores cadastrados no sistema com seus dados e fotos de perfil.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="creators-search" placeholder="Buscar por nome, @handle ou nicho..." oninput="filterCreatorCards()" style="padding: 0.55rem 1rem; font-size: 0.85rem; min-width: 260px;" />
+                        <select id="creators-filter-category" onchange="filterCreatorCards()" style="padding: 0.55rem 0.8rem; font-size: 0.85rem;">
+                            <option value="">Todas as categorias</option>
+                            <option value="Nano">Nano (&lt;10k)</option>
+                            <option value="Micro">Micro (10k-100k)</option>
+                            <option value="Mid">Mid (100k-500k)</option>
+                            <option value="Macro">Macro (500k+)</option>
+                        </select>
+                        {% if session_role == 'master' %}
+                        <button class="btn btn-secondary" id="btn-selection-mode" onclick="toggleSelectionMode()" style="padding: 0.55rem 1rem; font-size: 0.85rem;">Selecionar</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="creators-count" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.2rem;"></div>
+
+                <div id="creators-photo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem;">
+                    <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">Carregando criadores...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB: DATABASE ================= -->
+        <div class="tab-content" id="tab-database">
+            {% if session_role == 'master' %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="panel" style="margin-bottom: 0;">
+                    <div class="panel-header" style="margin-bottom: 0.5rem;">
+                        <div class="panel-title">Cadastrar Criador Manualmente</div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">Adicione o @ do criador no Instagram e o sistema preencherá as informações automaticamente usando o scraper (nome, foto, nicho, etc).</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="manual-username" placeholder="@instagram..." style="flex: 1; padding: 0.7rem; font-size: 0.95rem; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 6px;">
+                        <button class="btn" style="padding: 0.7rem 1.2rem; font-size: 0.95rem;" onclick="manualAddInfluencer()">Adicionar e Sincronizar</button>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-bottom: 0;">
+                    <div class="panel-header" style="margin-bottom: 0.5rem;">
+                        <div class="panel-title">Upload da sua Planilha de Influenciadores</div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">Sincronize contatos em massa salvando-os de uma vez no banco geral. <br><a href="/static/template_importacao_criadores.xlsx" target="_blank" style="color: var(--text-main); text-decoration: underline; font-weight: 500;">Baixe o formato padrão aqui</a>.</p>
+                    <div class="upload-zone" onclick="document.getElementById('excel-file').click()">
+                        <h4>Arraste sua planilha aqui ou clique para selecionar</h4>
+                        <p>Formatos suportados: .xlsx (Importa as abas Todas, Macro, Mid, Micro, Nano)</p>
+                        <input type="file" id="excel-file" style="display: none;" accept=".xlsx" onchange="uploadSpreadsheet()">
+                    </div>
+                    <div style="margin-top: 1.2rem; text-align: left; max-width: 450px;">
+                        <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">
+                            Vincular automaticamente a uma campanha (Opcional):
+                        </label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select id="import-project-selector" style="flex: 1; padding: 0.5rem;">
+                                <option value="">Não vincular (Salvar apenas no banco geral)</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="loadImportProjectsDropdown()" style="padding: 0.5rem 1rem;">Atualizar Lista</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ================= TAB: CAMPAIGNS ================= -->
+        <div class="tab-content {% if session_role == 'campaign_admin' %}active{% endif %}" id="tab-campaigns">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Gestor de Campanhas & Clientes</div>
+                    <div class="input-group" style="max-width: 250px;">
+                        <select id="project-selector" onchange="loadProjectCampaign()">
+                            <option value="">Selecione um cliente...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="no-campaign-selected" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                    Por favor, selecione uma campanha/cliente no menu acima para começar a rastrear.
+                </div>
+
+                <div id="campaign-detail-section" style="display: none;">
+                    <div class="share-banner">
+                        <div class="share-banner-info">
+                            <h4>Portal de Acompanhamento do Cliente</h4>
+                            <p>Envie este link para o cliente monitorar o andamento da campanha em tempo real, com filtros por Instagram e TikTok.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="copyShareLink()">Copiar Link do Cliente</button>
+                            {% if session_role == 'master' %}
+                            <button class="btn btn-secondary btn-danger" onclick="deleteCurrentProject()">Excluir Campanha</button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="kpis-banner">
+                        <div class="kpi-block">
+                            <h5>Criadores</h5>
+                            <div class="val" id="camp-kpi-creators">0</div>
+                        </div>
+                        <div class="kpi-block">
+                            <h5>Alcance Total</h5>
+                            <div class="val" id="camp-kpi-reach">0</div>
+                        </div>
+                        <div class="kpi-block">
+                            <h5>Postagens Feitas</h5>
+                            <div class="val" id="camp-kpi-posts" style="color: var(--success)">0</div>
+                        </div>
+                        <div class="kpi-block">
+                            <h5>Progresso Geral</h5>
+                            <div class="val" id="camp-kpi-progress">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-header">
+                        <div class="panel-title">Fluxo de Trabalho e Cronograma</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            {% if session_role == 'master' %}
+                            <button class="btn btn-secondary btn-danger" onclick="clearCampaignInfluencers()">Limpar Todos</button>
+                            {% endif %}
+                            <button class="btn btn-secondary" onclick="openAddInfluencerToProjectModal()">Vincular Criador</button>
+                        </div>
+                    </div>
+
+                    <div class="sheet-container">
+                        <table class="sheet-table">
+                            <thead>
+                                <tr>
+                                    <th>Creator</th>
+                                    <th>Categoria / Nicho</th>
+                                    <th>Seguidores</th>
+                                    <th>Status Workflow</th>
+                                    <th>WhatsApp</th>
+                                    <th>Endereço</th>
+                                    <th>Contato</th>
+                                    <th>Resposta</th>
+                                    <th>Cachê (R$)</th>
+                                    <th>Kit Enviado</th>
+                                    <th>Publicado</th>
+                                    <th>Métricas</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaign-influencer-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB: NEW PROJECT ================= -->
+        {% if session_role == 'master' %}
+        <div class="tab-content" id="tab-new-project">
+            <div class="panel" style="max-width: 600px; margin: 0 auto;">
+                <div class="panel-header">
+                    <div class="panel-title">Criar Novo Projeto / Campanha</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Nome da Campanha</label>
+                        <input type="text" id="new-p-name" placeholder="Ex: Limone — Coleção Primavera-Verão">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Nome do Cliente</label>
+                        <input type="text" id="new-p-client" placeholder="Ex: Limone">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Descrição da Campanha</label>
+                        <textarea id="new-p-desc" rows="4" placeholder="Detalhes do briefing, metas de engajamento, número de reels etc."></textarea>
+                    </div>
+                    <button class="btn" style="width: 100%; justify-content: center;" onclick="createNewProject()">Lançar Projeto</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB: CRAWLER ================= -->
+        <div class="tab-content" id="tab-crawling">
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Instagram Web Scraper Automático</div>
+                    <button class="btn" onclick="startBackgroundCrawl()" id="btn-start-crawl">Iniciar Varredura</button>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+                    Nosso robô faz a varredura automática por todos os handles (ex: <code>@username</code>) salvos no Banco de Dados que ainda estão sem nome ou sem informações e extrai Nome completo, Biografia, e-mail de contato e seguidores do Instagram.
+                </p>
+                <h4>Console de Varredura</h4>
+                <div class="console" id="crawl-logs">
+                    <div class="console-line">Robô aguardando ativação...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB: SETTINGS ================= -->
+        <div class="tab-content" id="tab-settings">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Alterar Minha Senha</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Nova Senha</label>
+                            <input type="password" id="set-new-password" placeholder="Digite sua nova senha">
+                        </div>
+                        <button class="btn" style="width: 100%; justify-content: center;" onclick="changeMyPassword()">Salvar Nova Senha</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Adicionar Novo Usuário Administrador</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Nome de Usuário</label>
+                            <input type="text" id="set-new-user-username" placeholder="Ex: larissa.branding">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Senha Inicial</label>
+                            <input type="password" id="set-new-user-password" placeholder="Defina a senha inicial">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Nível de Acesso (Plano)</label>
+                            <select id="set-new-user-role" onchange="toggleNewUserProjectSelector()">
+                                <option value="master">Administrador Global (Acesso Total)</option>
+                                <option value="campaign_admin">Administrador de Campanha (Acesso Limitado)</option>
+                            </select>
+                        </div>
+                        <div id="new-user-project-container" style="display: none;">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Campanha Permitida</label>
+                            <select id="set-new-user-project"></select>
+                        </div>
+                        <button class="btn" style="width: 100%; justify-content: center;" onclick="addNewAdminUser()">Adicionar Usuário</button>
+                    </div>
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                        <h4 style="font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 1rem;">Usuários Ativos</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;" id="settings-users-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+</div>
+
+<!-- Bulk Action Bar (floating) -->
+<div class="bulk-action-bar" id="bulk-action-bar">
+    <span class="selection-label"><strong id="selection-count">0</strong> selecionado(s)</span>
+    <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.82rem;" onclick="selectAllCreators()" id="btn-select-all">Selecionar Todos</button>
+    <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.82rem;" onclick="deleteSelectedCreators()">Apagar Selecionados</button>
+    <button class="btn btn-secondary" style="padding: 0.5rem 0.8rem; font-size: 0.82rem;" onclick="toggleSelectionMode()">✕ Cancelar</button>
+</div>
+
+<!-- Assign modal -->
+<div id="assign-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="panel" style="max-width: 500px; width: 100%;">
+        <div class="panel-header">
+            <div class="panel-title">Selecione Criador</div>
+            <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem;" onclick="closeAddInfluencerToProjectModal()">✕</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+            <select id="modal-influencer-selector"></select>
+            <button class="btn" style="width: 100%; justify-content: center;" onclick="assignInfluencerToProject()">Confirmar Vinculação</button>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow editing modal -->
+<div id="workflow-edit-modal" class="workflow-modal">
+    <div class="modal-body">
+        <div class="panel-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; margin-bottom: 1.5rem;">
+            <div class="panel-title" id="workflow-modal-title">Editar Fluxo da Criadora</div>
+            <button class="btn btn-secondary" style="padding: 0.4rem 0.8rem;" onclick="closeWorkflowEditModal()">✕</button>
+        </div>
+        <div class="modal-form-grid">
+            <input type="hidden" id="edit-modal-inf-id">
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Status da Campanha</label>
+                <select id="edit-modal-status">
+                    <option value="A contatar">A contatar</option>
+                    <option value="Contato enviado">Contato enviado</option>
+                    <option value="Aguardando resposta">Aguardando resposta</option>
+                    <option value="Confirmado">Confirmado</option>
+                    <option value="Kit enviado">Kit enviado</option>
+                    <option value="Reels publicado">Reels publicado</option>
+                    <option value="Concluído">Concluído</option>
+                    <option value="Desistiu">Desistiu</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">WhatsApp do Creator</label>
+                <input type="text" id="edit-modal-whatsapp" placeholder="Ex: (81) 99999-9999">
+            </div>
+            <div class="full-width">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Endereço de Entrega Confirmado</label>
+                <textarea id="edit-modal-endereco" rows="2" placeholder="Digite o endereço completo para envio do kit..."></textarea>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Data do Contato</label>
+                <input type="text" id="edit-modal-datacontato" placeholder="Ex: 19/05">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Status de Negociação / Resposta</label>
+                <input type="text" id="edit-modal-resposta" placeholder="Ex: Aprovada, Permuta fechada">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Cachê do Criador (R$)</label>
+                <input type="text" id="edit-modal-cache" placeholder="Ex: 500,00 ou Permuta">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Data de Envio do Kit</label>
+                <input type="text" id="edit-modal-dataenvio" placeholder="Ex: 22/05">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Data de Publicação</label>
+                <input type="text" id="edit-modal-datapub" placeholder="Ex: 26/05">
+            </div>
+            <div class="full-width">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Link do Reels Publicado</label>
+                <input type="text" id="edit-modal-linkreels" placeholder="Ex: https://instagram.com/reels/...">
+            </div>
+            <div class="full-width">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">Observações de Controle Interno</label>
+                <textarea id="edit-modal-obs" rows="2" placeholder="Qualquer nota ou lembrete sobre este creator..."></textarea>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); margin-top: 2rem; padding-top: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-family: 'Playfair Display', serif; font-size: 1.2rem;">Conteúdos e Métricas Publicadas</h4>
+                <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="crawlInfluencerPostsAutomatic()" id="btn-crawl-posts">
+                    🔍 Rastrear Menções (@)
+                </button>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+                Monitore múltiplos conteúdos deste criador. Você pode adicionar manualmente ou clicar no botão acima para o robô fazer a varredura automática de posts que mencionam a arroba (@) do seu cliente!
+            </p>
+            <div class="console" id="post-crawl-logs" style="display: none; height: 120px; font-size: 0.8rem; margin-bottom: 1rem; padding: 0.8rem;">
+                <div class="console-line">Aguardando ativação...</div>
+            </div>
+            <div id="tracked-posts-list" style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; max-height: 200px; overflow-y: auto; padding-right: 0.5rem;"></div>
+            <div style="background: #050505; border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px;">
+                <h5 style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.8rem; letter-spacing: 0.5px;">Adicionar Novo Post Manualmente</h5>
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 0.8rem;">
+                    <input type="text" id="new-post-url" placeholder="Ex: https://instagram.com/reel/..." style="font-size: 0.85rem; padding: 0.5rem; background-color: #000; border: 1px solid var(--border-color); color: #fff;">
+                    <input type="number" id="new-post-likes" placeholder="Curtidas" style="font-size: 0.85rem; padding: 0.5rem; background-color: #000; border: 1px solid var(--border-color); color: #fff;">
+                    <input type="number" id="new-post-comments" placeholder="Comments" style="font-size: 0.85rem; padding: 0.5rem; background-color: #000; border: 1px solid var(--border-color); color: #fff;">
+                    <input type="number" id="new-post-shares" placeholder="Shares" style="font-size: 0.85rem; padding: 0.5rem; background-color: #000; border: 1px solid var(--border-color); color: #fff;">
+                </div>
+                <button class="btn" style="width: 100%; justify-content: center; font-size: 0.82rem; padding: 0.5rem;" onclick="addPostManually()">Adicionar Conteúdo</button>
+            </div>
+        </div>
+
+        <button class="btn" style="width: 100%; justify-content: center; margin-top: 2rem;" onclick="saveWorkflowEditModal()">Salvar Alterações</button>
+    </div>
+</div>
+
+<!-- Creator Profile Modal -->
+<div id="creator-profile-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="panel" style="max-width: 550px; width: 100%; position: relative; overflow: hidden;">
+        <button class="btn btn-secondary" style="position: absolute; top: 1rem; right: 1rem; padding: 0.4rem 0.8rem; z-index: 10;" onclick="closeCreatorProfileModal()">✕</button>
+        <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+            <div id="profile-modal-avatar" style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-hover); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: var(--text-muted); border: 2px solid var(--border-color);"></div>
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <input type="text" id="profile-modal-name-input" style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem; background: transparent; border: none; color: var(--text-main); width: 100%; border-bottom: 1px solid transparent; padding: 0;" readonly>
+                        <p id="profile-modal-handle" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.8rem;">@handle</p>
+                    </div>
+                    {% if session_role == 'master' %}
+                    <button class="btn btn-secondary" id="btn-edit-profile" onclick="toggleEditProfile()" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Editar</button>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;" id="profile-modal-badges"></div>
+            </div>
+        </div>
+        <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+            <div>
+                <strong style="color: var(--text-main); display: block; margin-bottom: 0.2rem;">Email:</strong>
+                <input type="text" id="profile-modal-email-input" style="background: transparent; border: none; color: var(--text-muted); width: 100%; padding: 0; font-size: 0.85rem;" readonly>
+            </div>
+            <div>
+                <strong style="color: var(--text-main); display: block; margin-bottom: 0.2rem;">WhatsApp:</strong>
+                <input type="text" id="profile-modal-whatsapp-input" style="background: transparent; border: none; color: var(--text-muted); width: 100%; padding: 0; font-size: 0.85rem;" readonly>
+            </div>
+            <div>
+                <strong style="color: var(--text-main); display: block; margin-bottom: 0.2rem;">Nicho:</strong>
+                <input type="text" id="profile-modal-nicho-input" style="background: transparent; border: none; color: var(--text-muted); width: 100%; padding: 0; font-size: 0.85rem;" readonly>
+            </div>
+            <div>
+                <strong style="color: var(--text-main); display: block; margin-bottom: 0.2rem;">Endereço:</strong>
+                <input type="text" id="profile-modal-endereco-input" style="background: transparent; border: none; color: var(--text-muted); width: 100%; padding: 0; font-size: 0.85rem;" readonly>
+            </div>
+            <div style="grid-column: 1 / -1;">
+                <strong style="color: var(--text-main); display: block; margin-bottom: 0.2rem;">Cachê:</strong>
+                <input type="text" id="profile-modal-cache-input" style="background: transparent; border: none; color: var(--text-muted); width: 100%; padding: 0; font-size: 0.85rem;" readonly>
+            </div>
+        </div>
+        <div id="profile-modal-save-container" style="display: none; margin-top: 1rem;">
+            <button class="btn" style="width: 100%; justify-content: center; background-color: var(--success);" onclick="saveCreatorProfile()">Salvar Alterações</button>
+        </div>
+        <div style="margin-top: 1.5rem;">
+            <strong style="color: var(--text-main); font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">Campanhas Vinculadas:</strong>
+            <div id="profile-modal-campaigns" style="font-size: 0.85rem; color: var(--text-muted); padding: 0.8rem; background: var(--bg-main); border-radius: 8px; border: 1px solid var(--border-color);"></div>
+        </div>
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <a id="profile-modal-ig-link" href="#" target="_blank" style="flex: 1; text-decoration: none;">
+                <button class="btn" style="width: 100%; justify-content: center; background-color: #E1306C;">Acessar Perfil no Instagram</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeTab = "{{ session_role == 'campaign_admin' and 'campaigns' or 'home' }}";
+    let dbView = "grid";
+    let influencersData = [];
+    let campaignInfluencers = [];
+    let currentProjectId = null;
+    let crawlPollInterval = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadStats();
+        loadInfluencers();
+        loadProjects();
+        loadImportProjectsDropdown();
+
+        const userRole = "{{ session_role }}";
+        if (userRole === "campaign_admin") {
+            const userProjId = "{{ session_project_id }}";
+            switchTab("campaigns");
+            setTimeout(() => {
+                const selector = document.getElementById("project-selector");
+                if (selector) {
+                    selector.value = userProjId;
+                    selector.disabled = true;
+                }
+                loadProjectCampaign();
+            }, 500);
+        } else {
+            loadHomeDashboard();
+        }
+    });
+
+    function switchTab(tabId) {
+        activeTab = tabId;
+        document.querySelectorAll(".nav-link").forEach(l => l.classList.remove("active"));
+        document.getElementById(`tab-${tabId}-btn`).classList.add("active");
+        document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+        document.getElementById(`tab-${tabId}`).classList.add("active");
+
+        const title = document.getElementById("header-main-title");
+        const sub = document.getElementById("header-sub-title");
+
+        if (tabId === "home") {
+            title.innerText = "Painel Geral";
+            sub.innerText = "Sua central executiva de acompanhamento de campanhas ativas.";
+            loadHomeDashboard();
+        } else if (tabId === "creators") {
+            title.innerText = "Banco de Criadores";
+            sub.innerText = "Todos os criadores cadastrados no sistema com fotos de perfil e métricas.";
+            renderCreatorsGrid();
+        } else if (tabId === "database") {
+            title.innerText = "Importar Planilha";
+            sub.innerText = "Importe criadores em massa a partir de uma planilha .xlsx.";
+            loadImportProjectsDropdown();
+        } else if (tabId === "campaigns") {
+            title.innerText = "Painel Integrado de Campanhas";
+            sub.innerText = "Rastreie o funil de contato, entrega de kits e reels publicados para seus clientes.";
+            loadProjects();
+        } else if (tabId === "new-project") {
+            title.innerText = "Criar Nova Campanha";
+            sub.innerText = "Configure uma campanha separada para um novo cliente.";
+        } else if (tabId === "crawling") {
+            title.innerText = "Varredura Automática (Crawler)";
+            sub.innerText = "Enriqueça dados de perfis pendentes sem rate-limits.";
+        } else if (tabId === "settings") {
+            title.innerText = "Configurações & Usuários";
+            sub.innerText = "Altere sua senha de acesso ou crie novas contas administrativas.";
+            loadAdminUsers();
+        }
+    }
+
+    function loadHomeDashboard() {
+        fetch("/api/stats")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const homeProj = document.getElementById("home-stat-projects");
+                    const homeCreators = document.getElementById("home-stat-creators");
+                    const homeReach = document.getElementById("home-stat-reach");
+                    if (homeProj) homeProj.innerText = data.total_projects;
+                    if (homeCreators) homeCreators.innerText = data.total_influencers;
+                    if (homeReach) homeReach.innerText = data.total_followers_formatted || data.total_reach;
+                }
+            });
+
+        fetch("/api/projects")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const grid = document.getElementById("home-campaigns-grid");
+                    if (!grid) return;
+                    grid.innerHTML = "";
+                    if (data.projects.length === 0) {
+                        grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 3rem;">Nenhuma campanha cadastrada. Vá em "Nova Campanha" para começar!</div>`;
+                        return;
+                    }
+                    data.projects.forEach(p => {
+                        const counts = p.status_counts || {};
+                        grid.innerHTML += `
+                            <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; background: var(--bg-card); transition: all 0.2s ease;">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">Cliente: ${p.client_name}</div>
+                                    <h4 style="font-family: 'Playfair Display', serif; font-size: 1.35rem; margin-bottom: 0.8rem; line-height: 1.2;">${p.name}</h4>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.4rem;">${p.description || 'Sem descrição cadastrada.'}</p>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.82rem; border-top: 1px solid var(--border-color); padding-top: 0.8rem; margin-top: 1rem;">
+                                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Creators Mapeados:</span><span style="font-weight: 600;">${p.influencer_count}</span></div>
+                                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Publicações Feitas:</span><span style="font-weight: 600; color: #30D158;">${counts.publicado || 0}</span></div>
+                                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Kits Enviados:</span><span style="font-weight: 600;">${counts.kit_enviado || 0}</span></div>
+                                    </div>
+                                </div>
+                                <button class="btn" style="width: 100%; justify-content: center; margin-top: auto;" onclick="goToCampaignWorkspace(${p.id})">Gerenciar Campanha</button>
+                            </div>
+                        `;
+                    });
+                }
+            });
+    }
+
+    function goToCampaignWorkspace(pId) {
+        switchTab("campaigns");
+        setTimeout(() => {
+            const selector = document.getElementById("project-selector");
+            if (selector) { selector.value = pId; loadProjectCampaign(); }
+        }, 200);
+    }
+
+    function loadStats() {
+        fetch("/api/stats")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("stat-total").innerText = data.total_influencers;
+                    document.getElementById("stat-reach").innerText = data.total_reach;
+                    document.getElementById("stat-projects").innerText = data.total_projects;
+                }
+            });
+    }
+
+    function loadInfluencers() {
+        fetch("/api/influencers")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    influencersData = data.influencers;
+                    renderCreatorsGrid();
+                }
+            });
+    }
+
+    function filterInfluencers() {
+        const query = document.getElementById("global-search").value.toLowerCase();
+        document.querySelectorAll(".influencer-card").forEach(card => {
+            card.style.display = card.innerText.toLowerCase().includes(query) ? "flex" : "none";
+        });
+    }
+
+    // ---- Creators Photo Grid ----
+    function renderCreatorsGrid() {
+        const grid = document.getElementById("creators-photo-grid");
+        const countEl = document.getElementById("creators-count");
+        if (!grid) return;
+
+        grid.innerHTML = "";
+
+        if (!influencersData || influencersData.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem;">Nenhum criador cadastrado ainda. Importe uma planilha para começar.</div>`;
+            if (countEl) countEl.textContent = "";
+            return;
+        }
+
+        if (countEl) countEl.textContent = `${influencersData.length} criadores no banco`;
+
+        influencersData.forEach(inf => {
+            const handle = inf.instagram.replace('@', '');
+            const unavatarUrl = `https://unavatar.io/instagram/${handle}`;
+            const initial = inf.nome ? inf.nome[0].toUpperCase() : handle[0].toUpperCase();
+
+            const catColors = { 'Nano': 'rgba(52,199,89,0.15)', 'Micro': 'rgba(0,122,255,0.15)', 'Mid': 'rgba(255,159,10,0.15)', 'Macro': 'rgba(255,59,48,0.15)' };
+            const catColor = catColors[inf.categoria_ig] || 'rgba(255,255,255,0.07)';
+            const catTextColors = { 'Nano': '#34C759', 'Micro': '#007AFF', 'Mid': '#FF9F0A', 'Macro': '#FF3B30' };
+            const catTextColor = catTextColors[inf.categoria_ig] || '#888';
+
+            const card = document.createElement("div");
+            card.className = "creator-photo-card";
+            card.dataset.id = inf.id;
+            card.dataset.name = (inf.nome || "").toLowerCase();
+            card.dataset.handle = inf.instagram.toLowerCase();
+            card.dataset.nicho = (inf.nicho || "").toLowerCase();
+            card.dataset.category = inf.categoria_ig || "";
+
+            card.innerHTML = `
+                <div class="card-checkbox-overlay" onclick="toggleCardSelection(${inf.id}, event)"></div>
+                <div class="card-delete-btn" onclick="deleteSingleCreator(${inf.id}, event)" title="Remover criador">✕</div>
+                <div onclick="handleCardClick(${inf.id}, event)" style="display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%;">
+                    <div style="position: relative; width: 85px; height: 85px; background: var(--bg-hover); border-radius: 50%; overflow: hidden; margin: 0 auto 0.8rem auto; border: 2px solid var(--border-color);">
+                        <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 2rem; font-weight: 700; color: var(--text-muted); z-index: 1;">${initial}</span>
+                        <img src="${unavatarUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:2;transition:opacity 0.3s;" onerror="this.style.opacity='0';" />
+                    </div>
+                    <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-main); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${inf.nome || "@" + handle}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem;">@${handle}</div>
+                    <div style="margin-top: 0.6rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;">
+                        <span style="font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.6rem; border-radius: 20px; background: ${catColor}; color: ${catTextColor};">${inf.categoria_ig || "Nano"}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${inf.seguidores_ig_formatted || "—"} Seg.</span>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        if (selectionMode) {
+            grid.classList.add("selection-mode");
+            updateSelectionUI();
+        }
+    }
+
+    function filterCreatorCards() {
+        const query = (document.getElementById("creators-search")?.value || "").toLowerCase();
+        const catFilter = document.getElementById("creators-filter-category")?.value || "";
+        const cards = document.querySelectorAll(".creator-photo-card");
+        let visible = 0;
+        cards.forEach(card => {
+            const matchText = card.dataset.name.includes(query) || card.dataset.handle.includes(query) || card.dataset.nicho.includes(query);
+            const matchCat = catFilter === "" || card.dataset.category === catFilter;
+            const show = matchText && matchCat;
+            card.style.display = show ? "" : "none";
+            if (show) visible++;
+        });
+        const countEl = document.getElementById("creators-count");
+        if (countEl) countEl.textContent = `${visible} criadores encontrados`;
+    }
+
+    // ---- Bulk Selection ----
+    let selectionMode = false;
+    const selectedCreators = new Set();
+
+    function toggleSelectionMode() {
+        selectionMode = !selectionMode;
+        selectedCreators.clear();
+
+        const grid = document.getElementById("creators-photo-grid");
+        const toggleBtn = document.getElementById("btn-selection-mode");
+
+        if (selectionMode) {
+            grid.classList.add("selection-mode");
+            if (toggleBtn) { toggleBtn.textContent = "Cancelar Seleção"; toggleBtn.classList.add("btn-danger"); }
+        } else {
+            grid.classList.remove("selection-mode");
+            if (toggleBtn) { toggleBtn.textContent = "Selecionar"; toggleBtn.classList.remove("btn-danger"); }
+            document.getElementById("bulk-action-bar").classList.remove("visible");
+        }
+        updateSelectionUI();
+    }
+
+    function handleCardClick(id, event) {
+        if (selectionMode) {
+            toggleCardSelection(id, event);
+        } else {
+            openCreatorProfileModal(id);
+        }
+    }
+
+    function toggleCardSelection(id, event) {
+        event.stopPropagation();
+        if (selectedCreators.has(id)) { selectedCreators.delete(id); } else { selectedCreators.add(id); }
+        updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+        const bar = document.getElementById("bulk-action-bar");
+        const countEl = document.getElementById("selection-count");
+        const selectAllBtn = document.getElementById("btn-select-all");
+        const totalVisible = document.querySelectorAll(".creator-photo-card:not([style*='display: none'])").length;
+
+        document.querySelectorAll(".creator-photo-card").forEach(card => {
+            const id = parseInt(card.dataset.id);
+            const checkbox = card.querySelector(".card-checkbox-overlay");
+            if (selectedCreators.has(id)) {
+                card.classList.add("card-selected");
+                if (checkbox) checkbox.textContent = "✓";
+            } else {
+                card.classList.remove("card-selected");
+                if (checkbox) checkbox.textContent = "";
+            }
+        });
+
+        if (selectionMode && selectedCreators.size > 0) {
+            bar.classList.add("visible");
+            if (countEl) countEl.textContent = selectedCreators.size;
+        } else {
+            bar.classList.remove("visible");
+        }
+
+        if (selectAllBtn) {
+            selectAllBtn.textContent = selectedCreators.size >= totalVisible && totalVisible > 0 ? "Desmarcar Todos" : "Selecionar Todos";
+        }
+    }
+
+    function selectAllCreators() {
+        const cards = document.querySelectorAll(".creator-photo-card:not([style*='display: none'])");
+        const allSelected = selectedCreators.size >= cards.length;
+        if (allSelected) { selectedCreators.clear(); } else { cards.forEach(card => selectedCreators.add(parseInt(card.dataset.id))); }
+        updateSelectionUI();
+    }
+
+    function deleteSelectedCreators() {
+        if (selectedCreators.size === 0) return;
+        const count = selectedCreators.size;
+        if (!confirm(`Remover ${count} criador(es) do banco de dados? Esta ação não pode ser desfeita.`)) return;
+
+        fetch("/api/influencers/bulk-delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: Array.from(selectedCreators) })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                selectedCreators.clear();
+                selectionMode = false;
+                document.getElementById("creators-photo-grid").classList.remove("selection-mode");
+                const toggleBtn = document.getElementById("btn-selection-mode");
+                if (toggleBtn) { toggleBtn.textContent = "Selecionar"; toggleBtn.classList.remove("btn-danger"); }
+                document.getElementById("bulk-action-bar").classList.remove("visible");
+                loadStats();
+                loadInfluencers();
+            } else {
+                alert("Erro ao excluir: " + (data.error || "Tente novamente."));
+            }
+        });
+    }
+
+    function deleteSingleCreator(id, event) {
+        event.stopPropagation();
+        const inf = influencersData.find(i => i.id === id);
+        const name = inf ? (inf.nome || inf.instagram) : "este criador";
+        if (!confirm(`Remover ${name} do banco de dados?`)) return;
+        fetch(`/api/influencers/${id}/delete`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => { if (data.success) { loadStats(); loadInfluencers(); } });
+    }
+
+    let editingCreatorId = null;
+
+    function openCreatorProfileModal(id) {
+        const inf = influencersData.find(i => i.id === id);
+        if (!inf) return;
+
+        editingCreatorId = id;
+        const handle = inf.instagram.replace('@', '');
+        const unavatarUrl = `https://unavatar.io/instagram/${handle}`;
+        const igProfileUrl = `https://instagram.com/${handle}`;
+        const initial = inf.nome ? inf.nome[0].toUpperCase() : handle[0].toUpperCase();
+
+        document.getElementById("profile-modal-avatar").innerHTML = `
+            <span style="position: absolute; z-index: 1;">${initial}</span>
+            <img src="${unavatarUrl}" style="width: 100%; height: 100%; object-fit: cover; z-index: 2; position: relative;" onerror="this.style.opacity='0';" />
+        `;
+
+        document.getElementById("profile-modal-name-input").value = inf.nome || "";
+        document.getElementById("profile-modal-handle").textContent = `@${handle}`;
+        document.getElementById("profile-modal-email-input").value = inf.email || "";
+        document.getElementById("profile-modal-whatsapp-input").value = inf.whatsapp || "";
+        document.getElementById("profile-modal-nicho-input").value = inf.nicho || "";
+        document.getElementById("profile-modal-endereco-input").value = inf.endereco || "";
+        document.getElementById("profile-modal-cache-input").value = inf.cache || "";
+
+        const inputs = ["name", "email", "whatsapp", "nicho", "endereco", "cache"].map(id => document.getElementById(`profile-modal-${id}-input`));
+        inputs.forEach(inp => {
+            if (!inp) return;
+            inp.readOnly = true;
+            inp.style.borderBottom = "1px solid transparent";
+            inp.style.padding = "0";
+            inp.style.color = inp.id.includes("name") ? "var(--text-main)" : "var(--text-muted)";
+        });
+        document.getElementById("profile-modal-save-container").style.display = "none";
+        const editBtn = document.getElementById("btn-edit-profile");
+        if (editBtn) editBtn.style.display = "inline-flex";
+
+        document.getElementById("profile-modal-badges").innerHTML = `
+            <span style="font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 20px; background: rgba(255,255,255,0.1); color: #FFF;">${inf.categoria_ig || "Nano"}</span>
+            <span style="font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 20px; background: rgba(255,255,255,0.1); color: #FFF;">${inf.seguidores_ig_formatted || "—"} Seguidores</span>
+        `;
+
+        document.getElementById("profile-modal-ig-link").href = igProfileUrl;
+        document.getElementById("profile-modal-campaigns").innerHTML = "<em>(Navegue até a aba Campanhas para ver o fluxo específico)</em>";
+        document.getElementById("creator-profile-modal").style.display = "flex";
+    }
+
+    function toggleEditProfile() {
+        const inputs = ["name", "email", "whatsapp", "nicho", "endereco", "cache"].map(id => document.getElementById(`profile-modal-${id}-input`));
+        inputs.forEach(inp => {
+            if (!inp) return;
+            inp.readOnly = false;
+            inp.style.borderBottom = "1px solid var(--border-color)";
+            inp.style.padding = "0.2rem 0";
+            inp.style.color = "#FFFFFF";
+        });
+        document.getElementById("profile-modal-save-container").style.display = "block";
+        document.getElementById("btn-edit-profile").style.display = "none";
+        inputs[0].focus();
+    }
+
+    function saveCreatorProfile() {
+        if (!editingCreatorId) return;
+        const payload = {
+            nome: document.getElementById("profile-modal-name-input").value,
+            email: document.getElementById("profile-modal-email-input").value,
+            whatsapp: document.getElementById("profile-modal-whatsapp-input").value,
+            nicho: document.getElementById("profile-modal-nicho-input").value,
+            endereco: document.getElementById("profile-modal-endereco-input").value,
+            cache: document.getElementById("profile-modal-cache-input").value
+        };
+        fetch(`/api/influencers/${editingCreatorId}/update_full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const inf = influencersData.find(i => i.id === editingCreatorId);
+                if (inf) Object.assign(inf, payload);
+                if (currentProjectId) loadProjectCampaign();
+                renderCreatorsGrid();
+                closeCreatorProfileModal();
+            } else {
+                alert("Erro ao salvar: " + data.error);
+            }
+        });
+    }
+
+    function closeCreatorProfileModal() {
+        document.getElementById("creator-profile-modal").style.display = "none";
+        editingCreatorId = null;
+    }
+
+    function manualAddInfluencer() {
+        const input = document.getElementById("manual-username");
+        const handle = input.value.trim();
+        if (!handle) return;
+        alert("Adicionando criador de forma rápida. O robô irá enriquecer os dados em tempo real...");
+        fetch("/api/influencers/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: handle })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) { alert("Criador adicionado com sucesso."); input.value = ""; loadStats(); loadInfluencers(); }
+            else { alert("Erro ao adicionar: " + data.error); }
+        });
+    }
+
+    function deleteInfluencer(id) {
+        if (!confirm("Tem certeza que deseja remover este criador de conteúdo do banco de dados?")) return;
+        fetch(`/api/influencers/${id}/delete`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => { if (data.success) { loadStats(); loadInfluencers(); } });
+    }
+
+    function loadImportProjectsDropdown() {
+        fetch("/api/projects")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const selector = document.getElementById("import-project-selector");
+                    if (!selector) return;
+                    selector.innerHTML = `<option value="">Não vincular (Salvar apenas no banco geral)</option>`;
+                    data.projects.forEach(p => { selector.innerHTML += `<option value="${p.id}">${p.name} (${p.client_name})</option>`; });
+                }
+            });
+    }
+
+    function uploadSpreadsheet() {
+        const fileInput = document.getElementById("excel-file");
+        if (fileInput.files.length === 0) return;
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+        const selectedProj = document.getElementById("import-project-selector").value;
+        if (selectedProj) formData.append("project_id", selectedProj);
+        alert("Importando dados da planilha... Este processo é automático.");
+        fetch("/api/import", { method: "POST", body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    loadStats(); loadInfluencers(); loadProjects();
+                    if (selectedProj) { switchTab("campaigns"); document.getElementById("project-selector").value = selectedProj; loadProjectCampaign(); }
+                } else { alert("Erro ao ler planilha: " + data.error); }
+            });
+    }
+
+    function loadProjects() {
+        fetch("/api/projects")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const selector = document.getElementById("project-selector");
+                    selector.innerHTML = `<option value="">Selecione um cliente...</option>`;
+                    data.projects.forEach(p => { selector.innerHTML += `<option value="${p.id}">${p.name} (${p.client_name})</option>`; });
+                    const importSelector = document.getElementById("import-project-selector");
+                    if (importSelector) {
+                        importSelector.innerHTML = `<option value="">Não vincular (Salvar apenas no banco geral)</option>`;
+                        data.projects.forEach(p => { importSelector.innerHTML += `<option value="${p.id}">${p.name} (${p.client_name})</option>`; });
+                    }
+                }
+            });
+    }
+
+    function loadProjectCampaign() {
+        const pId = document.getElementById("project-selector").value;
+        if (!pId) {
+            document.getElementById("no-campaign-selected").style.display = "block";
+            document.getElementById("campaign-detail-section").style.display = "none";
+            currentProjectId = null;
+            return;
+        }
+        currentProjectId = pId;
+        document.getElementById("no-campaign-selected").style.display = "none";
+        document.getElementById("campaign-detail-section").style.display = "block";
+        fetch(`/api/projects/${pId}/influencers`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    campaignInfluencers = data.influencers;
+                    renderCampaignInfluencers(campaignInfluencers);
+                    recalculateCampaignKPIs(campaignInfluencers);
+                }
+            });
+    }
+
+    function renderCampaignInfluencers(influencers) {
+        const tbody = document.getElementById("campaign-influencer-tbody");
+        tbody.innerHTML = "";
+        if (influencers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; color: var(--text-muted); padding: 3rem;">Nenhum criador de conteúdo vinculado a este cliente. Clique em 'Vincular Criador'.</td></tr>`;
+            return;
+        }
+        influencers.forEach(inf => {
+            const tr = document.createElement("tr");
+            const displayWhatsapp = inf.pi_whatsapp !== null ? inf.pi_whatsapp : (inf.whatsapp || "Pendente");
+            const displayMetrics = `
+                <div style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.1rem; line-height: 1.2; min-width: 110px;">
+                    <span style="color: #FF3B30; font-weight: 500;">❤️ ${inf.total_likes.toLocaleString()}</span>
+                    <span style="color: #007AFF; font-weight: 500;">💬 ${inf.total_comments.toLocaleString()}</span>
+                    <span style="color: var(--text-muted); font-size: 0.72rem;">🔗 ${inf.post_count} posts</span>
+                </div>
+            `;
+            tr.innerHTML = `
+                <td style="font-weight: 600; color: #FFFFFF">${inf.instagram}</td>
+                <td><span class="badge badge-category">${inf.categoria_ig || "-"}</span><br><small style="color: var(--text-muted);">${inf.nicho || "-"}</small></td>
+                <td>${inf.seguidores_ig_formatted || "-"}</td>
+                <td><span class="badge badge-category" style="background: rgba(255,255,255,0.05);">${inf.status || "A contatar"}</span></td>
+                <td>${displayWhatsapp}</td>
+                <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${inf.end_confirmado || "Pendente"}</td>
+                <td>${inf.data_contato || "-"}</td>
+                <td>${inf.resposta || "-"}</td>
+                <td><strong>${inf.cache || "-"}</strong></td>
+                <td>${inf.data_envio_kit || "-"}</td>
+                <td>${inf.data_publicacao || "-"}</td>
+                <td>${displayMetrics}</td>
+                <td>
+                    <div style="display: flex; gap: 0.4rem;">
+                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="openWorkflowEditModal(${inf.id})">Editar Fluxo</button>
+                        <button class="btn btn-secondary btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="unassignInfluencer(${inf.id})">Desvincular</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function openWorkflowEditModal(infId) {
+        const inf = campaignInfluencers.find(i => i.id === infId);
+        if (!inf) return;
+        document.getElementById("edit-modal-inf-id").value = inf.id;
+        document.getElementById("workflow-modal-title").innerText = `Editar Fluxo — ${inf.instagram}`;
+        document.getElementById("edit-modal-status").value = inf.status || "A contatar";
+        document.getElementById("edit-modal-whatsapp").value = inf.pi_whatsapp !== null ? inf.pi_whatsapp : (inf.whatsapp || "");
+        document.getElementById("edit-modal-endereco").value = inf.end_confirmado || "";
+        document.getElementById("edit-modal-datacontato").value = inf.data_contato || "";
+        document.getElementById("edit-modal-resposta").value = inf.resposta || "";
+        document.getElementById("edit-modal-cache").value = inf.cache || "";
+        document.getElementById("edit-modal-dataenvio").value = inf.data_envio_kit || "";
+        document.getElementById("edit-modal-datapub").value = inf.data_publicacao || "";
+        document.getElementById("edit-modal-linkreels").value = inf.link_reels || "";
+        document.getElementById("edit-modal-obs").value = inf.pi_obs || "";
+        document.getElementById("new-post-url").value = "";
+        document.getElementById("new-post-likes").value = "";
+        document.getElementById("new-post-comments").value = "";
+        document.getElementById("new-post-shares").value = "";
+        document.getElementById("post-crawl-logs").style.display = "none";
+        loadTrackedPosts(inf.id);
+        document.getElementById("workflow-edit-modal").style.display = "flex";
+    }
+
+    function closeWorkflowEditModal() {
+        document.getElementById("workflow-edit-modal").style.display = "none";
+    }
+
+    function loadTrackedPosts(infId) {
+        const list = document.getElementById("tracked-posts-list");
+        list.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">Carregando posts do creator...</div>`;
+        fetch(`/api/projects/${currentProjectId}/influencers/${infId}/posts`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    list.innerHTML = "";
+                    if (data.posts.length === 0) {
+                        list.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.82rem; padding: 1rem; border: 1px dashed var(--border-color); border-radius: 8px;">Nenhum conteúdo rastreado. Insira manualmente ou inicie a busca automática!</div>`;
+                        return;
+                    }
+                    data.posts.forEach(post => {
+                        list.innerHTML += `
+                            <div style="display:flex; align-items:center; gap: 0.8rem; background: #080808; border: 1px solid var(--border-color); padding: 0.8rem; border-radius: 8px;">
+                                <div style="flex: 2; display: flex; flex-direction: column; overflow: hidden;">
+                                    <a href="${post.post_url}" target="_blank" style="color: var(--accent); font-weight: 500; font-size: 0.85rem; text-decoration: underline; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${post.post_url}</a>
+                                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Data: ${post.created_at || 'Mapeado'}</span>
+                                </div>
+                                <div style="flex: 3; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.4rem; align-items: center;">
+                                    <input type="number" id="inline-likes-${post.id}" value="${post.likes}" placeholder="Likes" style="font-size: 0.8rem; padding: 0.3rem; background: #000; color: #fff; border: 1px solid var(--border-color); text-align: center;" onchange="savePostMetricsInline(${post.id})">
+                                    <input type="number" id="inline-comments-${post.id}" value="${post.comments}" placeholder="Coment." style="font-size: 0.8rem; padding: 0.3rem; background: #000; color: #fff; border: 1px solid var(--border-color); text-align: center;" onchange="savePostMetricsInline(${post.id})">
+                                    <input type="number" id="inline-shares-${post.id}" value="${post.shares}" placeholder="Compart." style="font-size: 0.8rem; padding: 0.3rem; background: #000; color: #fff; border: 1px solid var(--border-color); text-align: center;" onchange="savePostMetricsInline(${post.id})">
+                                </div>
+                                <button class="btn btn-secondary btn-danger" style="padding: 0.3rem 0.5rem; font-size: 0.75rem;" onclick="deleteTrackedPost(${post.id}, ${infId})">✕</button>
+                            </div>
+                        `;
+                    });
+                }
+            });
+    }
+
+    function addPostManually() {
+        const infId = document.getElementById("edit-modal-inf-id").value;
+        const url = document.getElementById("new-post-url").value.trim();
+        const likes = document.getElementById("new-post-likes").value.trim() || 0;
+        const comments = document.getElementById("new-post-comments").value.trim() || 0;
+        const shares = document.getElementById("new-post-shares").value.trim() || 0;
+        if (!url) { alert("Cole o Link ou URL do Post para poder cadastrar."); return; }
+        fetch(`/api/projects/${currentProjectId}/influencers/${infId}/posts/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ post_url: url, likes, comments, shares })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("new-post-url").value = "";
+                document.getElementById("new-post-likes").value = "";
+                document.getElementById("new-post-comments").value = "";
+                document.getElementById("new-post-shares").value = "";
+                loadTrackedPosts(infId);
+                loadProjectCampaign();
+            } else { alert("Erro ao adicionar: " + data.error); }
+        });
+    }
+
+    function savePostMetricsInline(postId) {
+        const likes = document.getElementById(`inline-likes-${postId}`).value || 0;
+        const comments = document.getElementById(`inline-comments-${postId}`).value || 0;
+        const shares = document.getElementById(`inline-shares-${postId}`).value || 0;
+        fetch(`/api/projects/posts/update/${postId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ likes, comments, shares })
+        })
+        .then(res => res.json())
+        .then(data => { if (data.success) loadProjectCampaign(); });
+    }
+
+    function deleteTrackedPost(postId, infId) {
+        if (!confirm("Remover este conteúdo de métricas da campanha?")) return;
+        fetch(`/api/projects/posts/delete/${postId}`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => { if (data.success) { loadTrackedPosts(infId); loadProjectCampaign(); } });
+    }
+
+    function crawlInfluencerPostsAutomatic() {
+        const infId = document.getElementById("edit-modal-inf-id").value;
+        const btn = document.getElementById("btn-crawl-posts");
+        const logsDiv = document.getElementById("post-crawl-logs");
+        btn.disabled = true;
+        btn.innerText = "Varrendo...";
+        logsDiv.style.display = "block";
+        logsDiv.innerHTML = `<div class="console-line">[Robô] Iniciando varredura automatizada no feed do criador...</div>`;
+        setTimeout(() => {
+            logsDiv.innerHTML += `<div class="console-line">[Robô] Buscando referências da marca do cliente na campanha...</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            setTimeout(() => {
+                logsDiv.innerHTML += `<div class="console-line">[Robô] Cruzando posts com a hashtag/arroba do cliente...</div>`;
+                logsDiv.scrollTop = logsDiv.scrollHeight;
+                fetch(`/api/projects/${currentProjectId}/influencers/${infId}/crawl-posts`, { method: "POST" })
+                    .then(res => res.json())
+                    .then(data => {
+                        btn.disabled = false;
+                        btn.innerText = "🔍 Rastrear Menções (@)";
+                        if (data.success) {
+                            if (data.found_count > 0) {
+                                logsDiv.innerHTML += `<div class="console-line" style="color: #30D158;">[Robô] SUCESSO! Encontrado ${data.found_count} post(s) mencionando ${data.client_handle}!</div>`;
+                                data.posts.forEach(p => { logsDiv.innerHTML += `<div class="console-line" style="font-size:0.75rem;">→ ${p.post_url} | ❤️ ${p.likes} | 💬 ${p.comments}</div>`; });
+                                loadTrackedPosts(infId); loadProjectCampaign();
+                            } else {
+                                logsDiv.innerHTML += `<div class="console-line" style="color: #FF9500;">[Robô] Nenhuma menção nova a ${data.client_handle} encontrada.</div>`;
+                            }
+                        } else {
+                            logsDiv.innerHTML += `<div class="console-line" style="color: var(--error);">[Robô] Erro: ${data.error}</div>`;
+                        }
+                        logsDiv.scrollTop = logsDiv.scrollHeight;
+                    });
+            }, 1000);
+        }, 1000);
+    }
+
+    function saveWorkflowEditModal() {
+        const infId = document.getElementById("edit-modal-inf-id").value;
+        const fields = [
+            { col: "status", val: document.getElementById("edit-modal-status").value },
+            { col: "whatsapp", val: document.getElementById("edit-modal-whatsapp").value.trim() },
+            { col: "end_confirmado", val: document.getElementById("edit-modal-endereco").value.trim() },
+            { col: "data_contato", val: document.getElementById("edit-modal-datacontato").value.trim() },
+            { col: "resposta", val: document.getElementById("edit-modal-resposta").value.trim() },
+            { col: "cache", val: document.getElementById("edit-modal-cache").value.trim() },
+            { col: "data_envio_kit", val: document.getElementById("edit-modal-dataenvio").value.trim() },
+            { col: "data_publicacao", val: document.getElementById("edit-modal-datapub").value.trim() },
+            { col: "link_reels", val: document.getElementById("edit-modal-linkreels").value.trim() },
+            { col: "obs", val: document.getElementById("edit-modal-obs").value.trim() }
+        ];
+        Promise.all(fields.map(f =>
+            fetch(`/api/projects/${currentProjectId}/update-influencer`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ influencer_id: infId, column: f.col, value: f.val })
+            }).then(res => res.json())
+        )).then(() => { closeWorkflowEditModal(); loadProjectCampaign(); });
+    }
+
+    function recalculateCampaignKPIs(influencers) {
+        const total = influencers.length;
+        let reach = 0, posts = 0, progressSum = 0;
+        influencers.forEach(inf => {
+            reach += inf.seguidores_ig || 0;
+            if (inf.status === 'Reels publicado' || inf.status === 'Concluído') posts++;
+            const map = { 'Contato enviado': 14, 'Aguardando resposta': 28, 'Confirmado': 43, 'Kit enviado': 57, 'Reels publicado': 85, 'Concluído': 100 };
+            progressSum += map[inf.status] || 0;
+        });
+        document.getElementById("camp-kpi-creators").innerText = total;
+        document.getElementById("camp-kpi-reach").innerText = formatNumberThousands(reach);
+        document.getElementById("camp-kpi-posts").innerText = posts;
+        document.getElementById("camp-kpi-progress").innerText = `${total > 0 ? Math.round(progressSum / total) : 0}%`;
+    }
+
+    function formatNumberThousands(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function unassignInfluencer(id) {
+        if (!confirm("Remover este criador de conteúdo desta campanha?")) return;
+        fetch(`/api/projects/${currentProjectId}/unassign`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ influencer_id: id })
+        })
+        .then(res => res.json())
+        .then(data => { if (data.success) loadProjectCampaign(); });
+    }
+
+    function clearCampaignInfluencers() {
+        if (!confirm("Remover TODOS os criadores vinculados a esta campanha? Esta ação não pode ser desfeita.")) return;
+        fetch(`/api/projects/${currentProjectId}/clear`, { method: "POST", headers: { "Content-Type": "application/json" } })
+            .then(res => res.json())
+            .then(data => { if (data.success) loadProjectCampaign(); else alert("Erro ao limpar campanha: " + data.error); });
+    }
+
+    function openAddInfluencerToProjectModal() {
+        const selector = document.getElementById("modal-influencer-selector");
+        selector.innerHTML = "";
+        influencersData.forEach(inf => { selector.innerHTML += `<option value="${inf.id}">${inf.instagram} (${inf.nome || "Sem Nome"})</option>`; });
+        document.getElementById("assign-modal").style.display = "flex";
+    }
+
+    function closeAddInfluencerToProjectModal() {
+        document.getElementById("assign-modal").style.display = "none";
+    }
+
+    function assignInfluencerToProject() {
+        const infId = document.getElementById("modal-influencer-selector").value;
+        if (!infId) return;
+        fetch(`/api/projects/${currentProjectId}/assign`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ influencer_id: infId })
+        })
+        .then(res => res.json())
+        .then(data => { if (data.success) { closeAddInfluencerToProjectModal(); loadProjectCampaign(); } else { alert("Erro ao vincular: " + data.error); } });
+    }
+
+    function createNewProject() {
+        const name = document.getElementById("new-p-name").value.trim();
+        const client = document.getElementById("new-p-client").value.trim();
+        const desc = document.getElementById("new-p-desc").value.trim();
+        if (!name || !client) { alert("Nome do projeto e Cliente são necessários."); return; }
+        fetch("/api/projects/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, client_name: client, description: desc })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Campanha criada com sucesso.");
+                document.getElementById("new-p-name").value = "";
+                document.getElementById("new-p-client").value = "";
+                document.getElementById("new-p-desc").value = "";
+                loadStats(); loadProjects(); switchTab("campaigns");
+            } else { alert("Erro ao criar: " + data.error); }
+        });
+    }
+
+    function copyShareLink() {
+        const shareUrl = `${window.location.origin}/share/project/${currentProjectId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => { alert("Link do Portal do Cliente copiado com sucesso."); });
+    }
+
+    function deleteCurrentProject() {
+        if (!currentProjectId) return;
+        if (!confirm("Tem certeza absoluta de que deseja excluir esta campanha? Todos os dados vinculados serão perdidos permanentemente.")) return;
+        fetch(`/api/projects/${currentProjectId}/delete`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Campanha excluída com sucesso.");
+                    currentProjectId = null;
+                    document.getElementById("project-selector").value = "";
+                    document.getElementById("no-campaign-selected").style.display = "block";
+                    document.getElementById("campaign-detail-section").style.display = "none";
+                    loadStats(); loadProjects(); loadImportProjectsDropdown();
+                } else { alert("Erro ao excluir campanha."); }
+            });
+    }
+
+    function startBackgroundCrawl() {
+        const btn = document.getElementById("btn-start-crawl");
+        btn.disabled = true;
+        btn.innerText = "Carregando...";
+        fetch("/api/crawl-missing", { method: "POST" })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) { alert("Crawler iniciado em segundo plano."); startCrawlPolling(); }
+                else { btn.disabled = false; btn.innerText = "Iniciar Varredura"; }
+            });
+    }
+
+    function startCrawlPolling() {
+        if (crawlPollInterval) clearInterval(crawlPollInterval);
+        crawlPollInterval = setInterval(() => {
+            fetch("/api/crawl-status")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const status = data.crawl_status;
+                        const consoleLogs = document.getElementById("crawl-logs");
+                        consoleLogs.innerHTML = "";
+                        status.logs.forEach(log => {
+                            const line = document.createElement("div");
+                            line.className = "console-line";
+                            if (log.includes("Erro") || log.includes("Error")) line.style.color = "var(--error)";
+                            line.innerText = log;
+                            consoleLogs.appendChild(line);
+                        });
+                        consoleLogs.scrollTop = consoleLogs.scrollHeight;
+                        if (status.status === "processing") {
+                            document.getElementById("btn-start-crawl").innerText = `Varrendo (${status.processed}/${status.total})`;
+                        } else if (status.status === "done") {
+                            clearInterval(crawlPollInterval);
+                            crawlPollInterval = null;
+                            document.getElementById("btn-start-crawl").disabled = false;
+                            document.getElementById("btn-start-crawl").innerText = "Iniciar Varredura";
+                            alert("Crawler concluiu o enriquecimento com sucesso.");
+                            loadStats(); loadInfluencers();
+                        }
+                    }
+                });
+        }, 1000);
+    }
+
+    function loadAdminUsers() {
+        fetch("/api/users")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const listDiv = document.getElementById("settings-users-list");
+                    listDiv.innerHTML = "";
+                    data.users.forEach(u => {
+                        const displayRole = u.role === 'campaign_admin' ? `Acesso: ${u.project_name || 'Campanha Restrita'}` : 'Admin Global';
+                        listDiv.innerHTML += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: #050505; border: 1px solid var(--border-color); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.9rem;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span>${u.username}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">${displayRole}</span>
+                                </div>
+                                <button class="btn btn-secondary btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="deleteAdminUser(${u.id})">Excluir</button>
+                            </div>
+                        `;
+                    });
+                }
+            });
+    }
+
+    function changeMyPassword() {
+        const pass = document.getElementById("set-new-password").value.trim();
+        if (!pass) { alert("Por favor, preencha a nova senha."); return; }
+        fetch("/api/users/change-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: pass })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) { alert(data.message); document.getElementById("set-new-password").value = ""; }
+            else { alert("Erro ao alterar senha: " + data.error); }
+        });
+    }
+
+    function toggleNewUserProjectSelector() {
+        const role = document.getElementById("set-new-user-role").value;
+        const container = document.getElementById("new-user-project-container");
+        if (role === "campaign_admin") {
+            container.style.display = "block";
+            const select = document.getElementById("set-new-user-project");
+            select.innerHTML = "";
+            fetch("/api/projects").then(res => res.json()).then(data => {
+                if (data.success) data.projects.forEach(p => { select.innerHTML += `<option value="${p.id}">${p.name} (${p.client_name})</option>`; });
+            });
+        } else { container.style.display = "none"; }
+    }
+
+    function addNewAdminUser() {
+        const username = document.getElementById("set-new-user-username").value.trim();
+        const pass = document.getElementById("set-new-user-password").value.trim();
+        const role = document.getElementById("set-new-user-role").value;
+        const projId = role === "campaign_admin" ? document.getElementById("set-new-user-project").value : null;
+        if (!username || !pass) { alert("Preencha o nome de usuário e a senha."); return; }
+        fetch("/api/users/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password: pass, role, project_id: projId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                document.getElementById("set-new-user-username").value = "";
+                document.getElementById("set-new-user-password").value = "";
+                document.getElementById("set-new-user-role").value = "master";
+                document.getElementById("new-user-project-container").style.display = "none";
+                loadAdminUsers();
+            } else { alert("Erro ao adicionar: " + data.error); }
+        });
+    }
+
+    function deleteAdminUser(uId) {
+        if (!confirm("Tem certeza que deseja excluir esta conta de usuário administrativo?")) return;
+        fetch(`/api/users/delete/${uId}`, { method: "POST" })
+            .then(res => res.json())
+            .then(data => { if (data.success) { alert("Usuário excluído com sucesso."); loadAdminUsers(); } else { alert("Erro ao excluir: " + data.error); } });
+    }
+</script>
+
+</body>
+</html>
