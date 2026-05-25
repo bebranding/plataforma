@@ -55,7 +55,7 @@ import time
 import threading
 import sqlite3
 import requests
-import webbrowser
+
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 
 from dotenv import load_dotenv
