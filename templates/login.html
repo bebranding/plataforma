@@ -1,0 +1,44 @@
+import openpyxl
+from openpyxl.styles import Font, PatternFill
+
+wb = openpyxl.Workbook()
+ws = wb.active
+ws.title = "Todas"
+
+headers = [
+    "Instagram", "Nome", "Nicho", "Email", "WhatsApp", 
+    "Endereço", "Cachê", "Data Contato", "Resposta", 
+    "Envio Kit", "Data Publicação", "Link Reels", "Observações"
+]
+
+# Write headers
+for col_num, header in enumerate(headers, 1):
+    cell = ws.cell(row=1, column=col_num, value=header)
+    cell.font = Font(bold=True, color="FFFFFF")
+    cell.fill = PatternFill(start_color="333333", end_color="333333", fill_type="solid")
+
+# Add some dummy data to show format
+dummy_data = [
+    ["@exemplo1", "Ana Silva", "Beleza", "ana@email.com", "11999999999", "Rua A, 123 - SP", "1500", "10/05/2026", "Aceitou", "12/05/2026", "15/05/2026", "instagram.com/reels/...", "Gosta de produtos veganos"],
+    ["@exemplo_2", "João Pedro", "Moda", "joao@email.com", "21988888888", "Av B, 456 - RJ", "3000", "", "", "", "", "", ""]
+]
+
+for row_num, row_data in enumerate(dummy_data, 2):
+    for col_num, value in enumerate(row_data, 1):
+        ws.cell(row=row_num, column=col_num, value=value)
+
+# Adjust column widths
+for col in ws.columns:
+    max_length = 0
+    column = col[0].column_letter
+    for cell in col:
+        try:
+            if len(str(cell.value)) > max_length:
+                max_length = len(str(cell.value))
+        except:
+            pass
+    adjusted_width = (max_length + 2)
+    ws.column_dimensions[column].width = adjusted_width
+
+wb.save("static/template_importacao_criadores.xlsx")
+print("Template created!")
