@@ -6,7 +6,7 @@ class PgCursorWrapper:
         self.cur = cur
 
     def execute(self, query, params=None):
-        query = query.replace('?', '%s')
+        query = query.replace('%s', '%s')
         if params is None:
             self.cur.execute(query)
         else:
@@ -255,7 +255,7 @@ def clean_instagram_handle(val):
         return None
 
     if "instagram.com" in val_str or "ig.me" in val_str:
-        val_str = val_str.split('?')[0]
+        val_str = val_str.split('%s')[0]
         if val_str.endswith('/'):
             val_str = val_str[:-1]
         parts = val_str.split('/')
@@ -327,7 +327,7 @@ def fetch_instagram_profile(username):
         'Referer': f'https://www.instagram.com/{u}/',
     }
 
-    url = f'https://www.instagram.com/api/v1/users/web_profile_info/?username={u}'
+    url = f'https://www.instagram.com/api/v1/users/web_profile_info/%susername={u}'
     try:
         res = requests.get(url, headers=headers, timeout=10)
         if res.status_code == 200:
@@ -371,7 +371,7 @@ def login():
         password = request.form.get('password')
 
         conn = get_db_connection()
-        user = conn.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password)).fetchone()
+        user = conn.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password)).fetchone()
         conn.close()
 
         if user:
@@ -417,7 +417,7 @@ def cadastro_publico():
         instagram = f"@{instagram}"
 
     conn = get_db_connection()
-    exists = conn.execute("SELECT id FROM influencers WHERE instagram = ?", (instagram,)).fetchone()
+    exists = conn.execute("SELECT id FROM influencers WHERE instagram = %s", (instagram,)).fetchone()
     if exists:
         conn.close()
         return "Este perfil de Instagram já está cadastrado!", 400
@@ -446,7 +446,7 @@ def cadastro_publico():
     try:
         conn.execute('''
             INSERT INTO influencers (instagram, nome, seguidores_ig, seguidores_ig_formatted, tiktok, nicho, email, whatsapp, gabi_segue, ja_usou, categoria_ig, obs)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ''', (instagram, nome, followers_count, followers_formatted, tiktok, nicho, email, whatsapp, gabi_segue, ja_usou, category, obs_text))
         conn.commit()
         conn.close()
@@ -476,7 +476,7 @@ def api_register_influencer():
         instagram = f"@{instagram}"
 
     conn = get_db_connection()
-    exists = conn.execute("SELECT id FROM influencers WHERE instagram = ?", (instagram,)).fetchone()
+    exists = conn.execute("SELECT id FROM influencers WHERE instagram = %s", (instagram,)).fetchone()
     if exists:
         conn.close()
         return jsonify({"success": False, "error": "Este perfil de Instagram já está cadastrado no banco de dados."})
@@ -505,7 +505,7 @@ def api_register_influencer():
     try:
         conn.execute('''
             INSERT INTO influencers (instagram, nome, seguidores_ig, seguidores_ig_formatted, tiktok, nicho, email, whatsapp, gabi_segue, ja_usou, categoria_ig, obs)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ''', (instagram, nome, followers_count, followers_formatted, tiktok, nicho, email, whatsapp, gabi_segue, ja_usou, category, obs_text))
         conn.commit()
         conn.close()
@@ -517,7 +517,7 @@ def api_register_influencer():
 @app.route('/share/project/<int:project_id>')
 def client_portal(project_id):
     conn = get_db_connection()
-    project = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    project = conn.execute("SELECT * FROM projects WHERE id = %s", (project_id,)).fetchone()
     if not project:
         conn.close()
         return "Projeto não encontrado.", 404
@@ -556,7 +556,7 @@ def add_influencer():
         username = f"@{username}"
 
     conn = get_db_connection()
-    exists = conn.execute("SELECT id FROM influencers WHERE instagram = ?", (username,)).fetchone()
+    exists = conn.execute("SELECT id FROM influencers WHERE instagram = %s", (username,)).fetchone()
     if exists:
         conn.close()
         return jsonify({"success": False, "error": "Esta influenciadora já está cadastrada no banco de dados."})
@@ -572,7 +572,7 @@ def add_influencer():
 
             conn.execute('''
                 INSERT INTO influencers (instagram, nome, seguidores_ig, seguidores_ig_formatted, nicho, email, categoria_ig, obs)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ''', (username, profile["full_name"], profile["followers"], formatted_foll, niche, profile["email"], cat, f"Bio Link: {profile['external_url']}"))
 
             conn.commit()
@@ -581,7 +581,7 @@ def add_influencer():
         else:
             conn.execute('''
                 INSERT INTO influencers (instagram, nome, seguidores_ig, seguidores_ig_formatted, categoria_ig, obs)
-                VALUES (?, ?, 0, '0', 'Nano', ?)
+                VALUES (%s, %s, 0, '0', 'Nano', %s)
             ''', (username, f"Instagram Scrape Error: {profile['error']}"))
             conn.commit()
             conn.close()
@@ -594,7 +594,7 @@ def add_influencer():
 @app.route('/api/influencers/<int:inf_id>/delete', methods=['POST'])
 def delete_influencer(inf_id):
     conn = get_db_connection()
-    conn.execute("DELETE FROM influencers WHERE id = ?", (inf_id,))
+    conn.execute("DELETE FROM influencers WHERE id = %s", (inf_id,))
     conn.commit()
     conn.close()
     return jsonify({"success": True})
@@ -607,7 +607,7 @@ def bulk_delete_influencers():
         return jsonify({"success": False, "error": "Nenhum ID enviado."})
     conn = get_db_connection()
     try:
-        placeholders = ",".join("?" * len(ids))
+        placeholders = ",".join("%s" * len(ids))
         conn.execute(f"DELETE FROM influencers WHERE id IN ({placeholders})", ids)
         conn.commit()
         conn.close()
@@ -623,7 +623,7 @@ def get_projects():
     user_project_id = session.get('project_id')
 
     if role == 'campaign_admin' and user_project_id is not None:
-        rows = conn.execute("SELECT * FROM projects WHERE id = ?", (user_project_id,)).fetchall()
+        rows = conn.execute("SELECT * FROM projects WHERE id = %s", (user_project_id,)).fetchall()
     else:
         rows = conn.execute("SELECT * FROM projects ORDER BY id DESC").fetchall()
 
@@ -638,7 +638,7 @@ def get_projects():
     "SELECT COUNT(*) as count FROM influencers"
 ).fetchone()['count'] as count
             FROM project_influencers
-            WHERE project_id = ?
+            WHERE project_id = %s
             GROUP BY status
         ''', (r['id'],)).fetchall()
 
@@ -677,7 +677,7 @@ def create_project():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO projects (name, client_name, description, created_at) VALUES (?, ?, ?, ?) RETURNING id",
+        "INSERT INTO projects (name, client_name, description, created_at) VALUES (%s, %s, %s, %s) RETURNING id",
         (name, client, desc, time.strftime("%Y-%m-%d %H:%M"))
     )
     project_id = cursor.fetchone()["id"]
@@ -692,7 +692,7 @@ def delete_project(p_id):
         return jsonify({"success": False, "error": "Apenas administradores master podem excluir campanhas."}), 403
 
     conn = get_db_connection()
-    conn.execute("DELETE FROM projects WHERE id = ?", (p_id,))
+    conn.execute("DELETE FROM projects WHERE id = %s", (p_id,))
     conn.commit()
     conn.close()
     return jsonify({"success": True})
@@ -707,7 +707,7 @@ def get_project_influencers(project_id):
         SELECT i.*, pi.status, pi.data_contato, pi.resposta, pi.end_confirmado, pi.data_envio_kit, pi.data_publicacao, pi.link_reels, pi.whatsapp as pi_whatsapp, pi.obs as pi_obs, pi.cache
         FROM influencers i
         JOIN project_influencers pi ON i.id = pi.influencer_id
-        WHERE pi.project_id = ?
+        WHERE pi.project_id = %s
         ORDER BY i.seguidores_ig DESC
     ''', (project_id,)).fetchall()
 
@@ -720,7 +720,7 @@ def get_project_influencers(project_id):
                    SUM(comments) as total_comments,
                    SUM(shares) as total_shares
             FROM project_influencer_posts
-            WHERE project_id = ? AND influencer_id = ?
+            WHERE project_id = %s AND influencer_id = %s
         ''', (project_id, inf_id)).fetchone()
 
         d = dict(r)
@@ -742,8 +742,8 @@ def assign_influencer(project_id):
     conn = get_db_connection()
     try:
         conn.execute('''
-            INSERT OR IGNORE INTO project_influencers (project_id, influencer_id, status)
-            VALUES (?, ?, 'A contatar')
+            INSERT OR INTO INTO project_influencers (project_id, influencer_id, status)
+            VALUES (%s, %s, 'A contatar')
         ''', (project_id, influencer_id))
         conn.commit()
         conn.close()
@@ -759,7 +759,7 @@ def unassign_influencer(project_id):
 
     influencer_id = request.json.get("influencer_id")
     conn = get_db_connection()
-    conn.execute("DELETE FROM project_influencers WHERE project_id = ? AND influencer_id = ?", (project_id, influencer_id))
+    conn.execute("DELETE FROM project_influencers WHERE project_id = %s AND influencer_id = %s", (project_id, influencer_id))
     conn.commit()
     conn.close()
     return jsonify({"success": True})
@@ -770,7 +770,7 @@ def clear_campaign_influencers(project_id):
         return jsonify({"success": False, "error": "Acesso não autorizado para este projeto."}), 403
 
     conn = get_db_connection()
-    conn.execute("DELETE FROM project_influencers WHERE project_id = ?", (project_id,))
+    conn.execute("DELETE FROM project_influencers WHERE project_id = %s", (project_id,))
     conn.commit()
     conn.close()
     return jsonify({"success": True})
@@ -792,16 +792,16 @@ def update_project_influencer(project_id):
     try:
         conn.execute(f'''
             UPDATE project_influencers
-            SET {column} = ?
-            WHERE project_id = ? AND influencer_id = ?
+            SET {column} = %s
+            WHERE project_id = %s AND influencer_id = %s
         ''', (value, project_id, influencer_id))
 
         if column == "whatsapp":
-            conn.execute("UPDATE influencers SET whatsapp = ? WHERE id = ?", (value, influencer_id))
+            conn.execute("UPDATE influencers SET whatsapp = %s WHERE id = %s", (value, influencer_id))
         elif column == "end_confirmado":
-            conn.execute("UPDATE influencers SET endereco = ? WHERE id = ?", (value, influencer_id))
+            conn.execute("UPDATE influencers SET endereco = %s WHERE id = %s", (value, influencer_id))
         elif column == "cache":
-            conn.execute("UPDATE influencers SET cache = ? WHERE id = ?", (value, influencer_id))
+            conn.execute("UPDATE influencers SET cache = %s WHERE id = %s", (value, influencer_id))
 
         conn.commit()
         conn.close()
@@ -818,7 +818,7 @@ def get_project_influencer_posts(project_id, influencer_id):
     conn = get_db_connection()
     rows = conn.execute('''
         SELECT * FROM project_influencer_posts
-        WHERE project_id = ? AND influencer_id = ?
+        WHERE project_id = %s AND influencer_id = %s
         ORDER BY id DESC
     ''', (project_id, influencer_id)).fetchall()
     posts = [dict(r) for r in rows]
@@ -867,7 +867,7 @@ def add_project_influencer_post(project_id, influencer_id):
         now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         cursor.execute('''
             INSERT INTO project_influencer_posts (project_id, influencer_id, post_url, likes, comments, shares, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         ''', (project_id, influencer_id, post_url, likes, comments, shares, now_str))
         conn.commit()
         conn.close()
@@ -879,7 +879,7 @@ def add_project_influencer_post(project_id, influencer_id):
 @app.route('/api/projects/posts/delete/<int:post_id>', methods=['POST'])
 def delete_project_influencer_post(post_id):
     conn = get_db_connection()
-    post = conn.execute("SELECT project_id FROM project_influencer_posts WHERE id = ?", (post_id,)).fetchone()
+    post = conn.execute("SELECT project_id FROM project_influencer_posts WHERE id = %s", (post_id,)).fetchone()
     if not post:
         conn.close()
         return jsonify({"success": False, "error": "Post não encontrado."})
@@ -890,7 +890,7 @@ def delete_project_influencer_post(post_id):
         return jsonify({"success": False, "error": "Acesso não autorizado para este projeto."}), 403
 
     try:
-        conn.execute("DELETE FROM project_influencer_posts WHERE id = ?", (post_id,))
+        conn.execute("DELETE FROM project_influencer_posts WHERE id = %s", (post_id,))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Post removido com sucesso."})
@@ -901,7 +901,7 @@ def delete_project_influencer_post(post_id):
 @app.route('/api/projects/posts/update/<int:post_id>', methods=['POST'])
 def update_project_influencer_post_metrics(post_id):
     conn = get_db_connection()
-    post = conn.execute("SELECT project_id FROM project_influencer_posts WHERE id = ?", (post_id,)).fetchone()
+    post = conn.execute("SELECT project_id FROM project_influencer_posts WHERE id = %s", (post_id,)).fetchone()
     if not post:
         conn.close()
         return jsonify({"success": False, "error": "Post não encontrado."})
@@ -918,8 +918,8 @@ def update_project_influencer_post_metrics(post_id):
     try:
         conn.execute('''
             UPDATE project_influencer_posts
-            SET likes = ?, comments = ?, shares = ?
-            WHERE id = ?
+            SET likes = %s, comments = %s, shares = %s
+            WHERE id = %s
         ''', (likes, comments, shares, post_id))
         conn.commit()
         conn.close()
@@ -934,8 +934,8 @@ def crawl_project_influencer_posts(project_id, influencer_id):
         return jsonify({"success": False, "error": "Acesso não autorizado para este projeto."}), 403
 
     conn = get_db_connection()
-    project = conn.execute("SELECT client_name, name FROM projects WHERE id = ?", (project_id,)).fetchone()
-    influencer = conn.execute("SELECT instagram FROM influencers WHERE id = ?", (influencer_id,)).fetchone()
+    project = conn.execute("SELECT client_name, name FROM projects WHERE id = %s", (project_id,)).fetchone()
+    influencer = conn.execute("SELECT instagram FROM influencers WHERE id = %s", (influencer_id,)).fetchone()
 
     if not project or not influencer:
         conn.close()
@@ -959,7 +959,7 @@ def crawl_project_influencer_posts(project_id, influencer_id):
     num_found = random.randint(1, 2)
     for i in range(num_found):
         url = post_options[i]
-        existing = conn.execute("SELECT id FROM project_influencer_posts WHERE post_url = ?", (url,)).fetchone()
+        existing = conn.execute("SELECT id FROM project_influencer_posts WHERE post_url = %s", (url,)).fetchone()
         if not existing:
             likes = random.randint(120, 3900)
             comments = random.randint(10, 240)
@@ -967,7 +967,7 @@ def crawl_project_influencer_posts(project_id, influencer_id):
 
             conn.execute('''
                 INSERT INTO project_influencer_posts (project_id, influencer_id, post_url, likes, comments, shares, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             ''', (project_id, influencer_id, url, likes, comments, shares, now_str))
 
             created_posts.append({
@@ -999,7 +999,7 @@ def update_master_influencer(inf_id):
 
     conn = get_db_connection()
     try:
-        conn.execute(f"UPDATE influencers SET {column} = ? WHERE id = ?", (value, inf_id))
+        conn.execute(f"UPDATE influencers SET {column} = %s WHERE id = %s", (value, inf_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
@@ -1020,14 +1020,14 @@ def update_master_influencer_full(inf_id):
     try:
         conn.execute('''
             UPDATE influencers
-            SET nome = ?, email = ?, whatsapp = ?, nicho = ?, endereco = ?, cache = ?
-            WHERE id = ?
+            SET nome = %s, email = %s, whatsapp = %s, nicho = %s, endereco = %s, cache = %s
+            WHERE id = %s
         ''', (nome, email, whatsapp, nicho, endereco, cache, inf_id))
 
         conn.execute('''
             UPDATE project_influencers
-            SET whatsapp = ?, end_confirmado = ?, cache = ?
-            WHERE influencer_id = ?
+            SET whatsapp = %s, end_confirmado = %s, cache = %s
+            WHERE influencer_id = %s
         ''', (whatsapp, endereco, cache, inf_id))
 
         conn.commit()
@@ -1062,7 +1062,7 @@ def import_excel():
             project_id = int(project_id)
         else:
             cursor.execute(
-                "INSERT INTO projects (name, client_name, description, created_at) VALUES (?, ?, ?, ?) RETURNING id",
+                "INSERT INTO projects (name, client_name, description, created_at) VALUES (%s, %s, %s, %s) RETURNING id",
                 ("Limone — Relançamento Coleção", "Limone", "Importação oficial da planilha limone_influenciadoras.xlsx contendo o andamento das campanhas.", time.strftime("%Y-%m-%d %H:%M"))
             )
             project_id = cursor.fetchone()["id"]
@@ -1187,7 +1187,7 @@ def import_excel():
                     followers_count = parse_followers(followers_formatted)
                     cat = get_category_by_followers(followers_count)
 
-                    cursor.execute("SELECT id FROM influencers WHERE instagram = ?", (ig,))
+                    cursor.execute("SELECT id FROM influencers WHERE instagram = %s", (ig,))
                     inf_row = cursor.fetchone()
 
                     if inf_row:
@@ -1195,14 +1195,14 @@ def import_excel():
                     else:
                         cursor.execute('''
                             INSERT INTO influencers (instagram, nome, seguidores_ig, seguidores_ig_formatted, tiktok, nicho, email, whatsapp, gabi_segue, ja_usou, categoria_ig, obs, endereco, cache)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                             RETURNING id
                         ''', (ig, str(nome) if nome else None, followers_count, str(followers_formatted) if followers_formatted else "0", str(tiktok) if tiktok else None, str(nicho) if nicho else None, str(email) if email else None, str(whatsapp) if whatsapp else None, str(gabi_segue) if gabi_segue else None, str(ja_usou) if ja_usou else None, cat, str(obs) if obs else None, str(end_confirmado) if end_confirmado else None, str(cache) if cache else None))
                         influencer_id = cursor.fetchone()["id"]
 
                     cursor.execute('''
-                        INSERT OR REPLACE INTO project_influencers (project_id, influencer_id, status, data_contato, resposta, end_confirmado, data_envio_kit, data_publicacao, link_reels, whatsapp, obs, cache)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO project_influencers (project_id, influencer_id, status, data_contato, resposta, end_confirmado, data_envio_kit, data_publicacao, link_reels, whatsapp, obs, cache)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ''', (project_id, influencer_id, str(status) if status else 'A contatar', str(data_contato) if data_contato else None, str(resposta) if resposta else None, str(end_confirmado) if end_confirmado else None, str(data_envio) if data_envio else None, str(data_publicacao) if data_publicacao else None, str(link_reels) if link_reels else None, str(whatsapp) if whatsapp else None, str(obs) if obs else None, str(cache) if cache else None))
 
                     imported_count += 1
@@ -1251,14 +1251,14 @@ def bulk_fill_master_thread():
 
             conn.execute('''
                 UPDATE influencers
-                SET nome = ?, seguidores_ig = ?, seguidores_ig_formatted = ?, nicho = ?, email = ?, categoria_ig = ?, obs = ?
-                WHERE id = ?
+                SET nome = %s, seguidores_ig = %s, seguidores_ig_formatted = %s, nicho = %s, email = %s, categoria_ig = %s, obs = %s
+                WHERE id = %s
             ''', (profile["full_name"], profile["followers"], formatted_foll, niche, profile["email"], cat, f"Bio Link: {profile['external_url']}", inf_id))
             conn.commit()
             log_message(f"Enriquecido com sucesso: {username} ({formatted_foll} seguidores)")
         else:
             log_message(f"Erro ao buscar {username}: {profile['error']}")
-            conn.execute("UPDATE influencers SET nome = '[Não Encontrado/Erro]', obs = ? WHERE id = ?", (f"Erro de busca: {profile['error']}", inf_id))
+            conn.execute("UPDATE influencers SET nome = '[Não Encontrado/Erro]', obs = %s WHERE id = %s", (f"Erro de busca: {profile['error']}", inf_id))
             conn.commit()
 
         crawl_state["processed"] += 1
@@ -1314,7 +1314,7 @@ def add_user():
 
     conn = get_db_connection()
     try:
-        conn.execute("INSERT INTO users (username, password, role, project_id) VALUES (?, ?, ?, ?)", (username, password, role, project_id))
+        conn.execute("INSERT INTO users (username, password, role, project_id) VALUES (%s, %s, %s, %s)", (username, password, role, project_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True, "message": "Usuário criado com sucesso!"})
@@ -1333,12 +1333,12 @@ def delete_user(u_id):
         conn.close()
         return jsonify({"success": False, "error": "Não é possível remover o único usuário administrativo cadastrado."})
 
-    user = conn.execute("SELECT username FROM users WHERE id = ?", (u_id,)).fetchone()
+    user = conn.execute("SELECT username FROM users WHERE id = %s", (u_id,)).fetchone()
     if user and user['username'] == session.get('username'):
         conn.close()
         return jsonify({"success": False, "error": "Você não pode excluir o usuário que está atualmente logado."})
 
-    conn.execute("DELETE FROM users WHERE id = ?", (u_id,))
+    conn.execute("DELETE FROM users WHERE id = %s", (u_id,))
     conn.commit()
     conn.close()
     return jsonify({"success": True})
@@ -1352,7 +1352,7 @@ def change_password():
         return jsonify({"success": False, "error": "A senha não pode estar em branco."})
 
     conn = get_db_connection()
-    conn.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+    conn.execute("UPDATE users SET password = %s WHERE username = %s", (new_password, username))
     conn.commit()
     conn.close()
     return jsonify({"success": True, "message": "Senha atualizada com sucesso!"})
