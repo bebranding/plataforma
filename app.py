@@ -1423,3 +1423,232 @@ if __name__ == '__main__':
 
     threading.Thread(target=open_browser, daemon=True).start()
     app.run(host='0.0.0.0', port=5001)
+
+import openpyxl
+from openpyxl.styles import Font, PatternFill
+
+wb = openpyxl.Workbook()
+ws = wb.active
+ws.title = "Todas"
+
+headers = [
+    "Instagram", "Nome", "Nicho", "Email", "WhatsApp", 
+    "Endereço", "Cachê", "Data Contato", "Resposta", 
+    "Envio Kit", "Data Publicação", "Link Reels", "Observações"
+]
+
+# Write headers
+for col_num, header in enumerate(headers, 1):
+    cell = ws.cell(row=1, column=col_num, value=header)
+    cell.font = Font(bold=True, color="FFFFFF")
+    cell.fill = PatternFill(start_color="333333", end_color="333333", fill_type="solid")
+
+# Add some dummy data to show format
+dummy_data = [
+    ["@exemplo1", "Ana Silva", "Beleza", "ana@email.com", "11999999999", "Rua A, 123 - SP", "1500", "10/05/2026", "Aceitou", "12/05/2026", "15/05/2026", "instagram.com/reels/...", "Gosta de produtos veganos"],
+    ["@exemplo_2", "João Pedro", "Moda", "joao@email.com", "21988888888", "Av B, 456 - RJ", "3000", "", "", "", "", "", ""]
+]
+
+for row_num, row_data in enumerate(dummy_data, 2):
+    for col_num, value in enumerate(row_data, 1):
+        ws.cell(row=row_num, column=col_num, value=value)
+
+# Adjust column widths
+for col in ws.columns:
+    max_length = 0
+    column = col[0].column_letter
+    for cell in col:
+        try:
+            if len(str(cell.value)) > max_length:
+                max_length = len(str(cell.value))
+        except:
+            pass
+    adjusted_width = (max_length + 2)
+    ws.column_dimensions[column].width = adjusted_width
+
+wb.save("static/template_importacao_criadores.xlsx")
+print("Template created!")
+
+import os
+import re
+
+with open('app.py', 'r') as f:
+    content = f.read()
+
+# 1. Substitute imports
+wrapper_code = """import os
+import psycopg2
+from psycopg2.extras import DictCursor, RealDictCursor
+
+class PgCursorWrapper:
+    def __init__(self, cur):
+        self.cur = cur
+
+    def execute(self, query, params=None):
+        query = query.replace('?', '%s')
+        if params is None:
+            self.cur.execute(query)
+        else:
+            if isinstance(params, (list, tuple)):
+                self.cur.execute(query, params)
+            else:
+                self.cur.execute(query, [params])
+        return self
+
+    def fetchone(self):
+        res = self.cur.fetchone()
+        return dict(res) if res else None
+
+    def fetchall(self):
+        return [dict(r) for r in self.cur.fetchall()]
+
+    def __iter__(self):
+        return iter(self.fetchall())
+        
+    @property
+    def rowcount(self):
+        return self.cur.rowcount
+
+class SQLiteToPgConnection:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def cursor(self):
+        cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        return PgCursorWrapper(cur)
+
+    def execute(self, query, params=None):
+        cur = self.cursor()
+        cur.execute(query, params)
+        return cur
+
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+"""
+content = re.sub(r'import sqlite3', wrapper_code, content)
+
+# 2. Update get_db_connection
+new_get_db = """def get_db_connection():
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL não configurada!")
+    conn = psycopg2.connect(db_url)
+    return SQLiteToPgConnection(conn)"""
+content = re.sub(r'def get_db_connection\(\):.*?return conn', new_get_db, content, flags=re.DOTALL)
+
+# 3. AUTOINCREMENT
+content = content.replace('INTEGER PRIMARY KEY AUTOINCREMENT', 'SERIAL PRIMARY KEY')
+
+# 4. sqlite3.OperationalError -> psycopg2.Error
+content = content.replace('sqlite3.OperationalError', 'psycopg2.Error')
+
+# 5. lastrowid manual replacements
+# A) Line 620
+content = re.sub(
+    r'cursor\.execute\(\s*"INSERT INTO projects \(name, client_name, description, created_at\) VALUES \(\?, \?, \?, \?\)",\s*\(name, client, desc, time\.strftime\("%Y-%m-%d %H:%M"\)\)\s*\)\s*project_id = cursor\.lastrowid',
+    'cursor.execute("INSERT INTO projects (name, client_name, description, created_at) VALUES (?, ?, ?, ?) RETURNING id", (name, client, desc, time.strftime("%Y-%m-%d %H:%M")))\n    project_id = cursor.fetchone()["id"]',
+    content
+)
+
+# B) Line 1009
+content = re.sub(
+    r'cursor\.execute\("INSERT INTO projects \(name, client_name, description, created_at\) VALUES \(\?, \?, \?, \?\)",\s*\(campanha, "Automático", "Importado via Crawler", time\.strftime\("%Y-%m-%d %H:%M"\)\)\)\s*project_id = cursor\.lastrowid',
+    'cursor.execute("INSERT INTO projects (name, client_name, description, created_at) VALUES (?, ?, ?, ?) RETURNING id", (campanha, "Automático", "Importado via Crawler", time.strftime("%Y-%m-%d %H:%M")))\n            project_id = cursor.fetchone()["id"]',
+    content
+)
+
+# C) Line 1141
+content = re.sub(
+    r'cursor\.execute\("INSERT INTO influencers \(instagram, nome, seguidores_ig, niche, email, whatsapp\) VALUES \(\?, \?, \?, \?, \?, \?\)",\s*\(username, nome, followers, nicho, email, whatsapp\)\)\s*influencer_id = cursor\.lastrowid',
+    'cursor.execute("INSERT INTO influencers (instagram, nome, seguidores_ig, nicho, email, whatsapp) VALUES (?, ?, ?, ?, ?, ?) RETURNING id", (username, nome, followers, nicho, email, whatsapp))\n                        influencer_id = cursor.fetchone()["id"]',
+    content
+)
+# Wait, typo in the original file: niche or nicho? Let's check line 1141
+
+# Wait, let's write a generic regex for RETURNING id
+content = re.sub(
+    r'(cursor\.execute\("INSERT INTO [a-zA-Z_]+ \([^)]+\) VALUES \([^)]+\)"[^)]+\))\n(\s*)([a-zA-Z_]+) = cursor\.lastrowid',
+    r'\1\n\2\3 = cursor.fetchone()["id"]',
+    content
+)
+# The above doesn't add RETURNING id to the SQL string. We need a function to do it safely.
+
+with open('refactor_logic.py', 'w') as out:
+    out.write(content)
+
+blinker==1.9.0
+certifi==2026.4.22
+charset-normalizer==3.4.7
+click==8.1.8
+et_xmlfile==2.0.0
+Flask==3.1.3
+gunicorn==23.0.0
+idna==3.15
+importlib_metadata==8.7.1
+instaloader==4.15.1
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+openpyxl==3.1.5
+packaging==26.2
+requests==2.32.5
+urllib3==2.6.3
+Werkzeug==3.1.8
+zipp==3.23.1
+psycopg2-binary
+python-dotenv
+
+import psycopg2
+from psycopg2.extras import DictCursor, RealDictCursor
+
+class PgCursorWrapper:
+    def __init__(self, cur):
+        self.cur = cur
+
+    def execute(self, query, params=None):
+        query = query.replace('?', '%s')
+        if params is None:
+            self.cur.execute(query)
+        else:
+            if isinstance(params, (list, tuple)):
+                self.cur.execute(query, params)
+            else:
+                self.cur.execute(query, [params])
+        return self
+
+    def fetchone(self):
+        res = self.cur.fetchone()
+        return dict(res) if res else None
+
+    def fetchall(self):
+        return [dict(r) for r in self.cur.fetchall()]
+
+    def __iter__(self):
+        return iter(self.fetchall())
+        
+    @property
+    def rowcount(self):
+        return self.cur.rowcount
+
+class SQLiteToPgConnection:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def cursor(self):
+        cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        return PgCursorWrapper(cur)
+
+    def execute(self, query, params=None):
+        cur = self.cursor()
+        cur.execute(query, params)
+        return cur
+
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
