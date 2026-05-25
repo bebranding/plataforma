@@ -619,35 +619,47 @@ def bulk_delete_influencers():
 @app.route('/api/projects', methods=['GET'])
 def get_projects():
     conn = get_db_connection()
+
     role = session.get('role', 'master')
     user_project_id = session.get('project_id')
 
     if role == 'campaign_admin' and user_project_id is not None:
-        rows = conn.execute("SELECT * FROM projects WHERE id = %s", (user_project_id,)).fetchall()
+        rows = conn.execute(
+            "SELECT * FROM projects WHERE id = %s",
+            (user_project_id,)
+        ).fetchall()
     else:
-        rows = conn.execute("SELECT * FROM projects ORDER BY id DESC").fetchall()
+        rows = conn.execute(
+            "SELECT * FROM projects ORDER BY id DESC"
+        ).fetchall()
 
     projects = []
+
     for r in rows:
-       count = conn.execute(
-    "SELECT COUNT(*) as count FROM influencers"
-).fetchone()['count']
+        inf_count = conn.execute(
+            "SELECT COUNT(*) as count FROM project_influencers WHERE project_id = %s",
+            (r['id'],)
+        ).fetchone()['count']
 
         statuses = conn.execute('''
-            SELECT status, total_influencers = conn.execute(
-    "SELECT COUNT(*) as count FROM influencers"
-).fetchone()['count'] as count
+            SELECT status, COUNT(*) as count
             FROM project_influencers
             WHERE project_id = %s
             GROUP BY status
         ''', (r['id'],)).fetchall()
 
         status_counts = {}
+
         for s in statuses:
             normalized_status = s['status'].lower().strip()
+
             if 'publicado' in normalized_status:
                 key = 'publicado'
-            elif 'envio' in normalized_status or 'enviado' in normalized_status or 'kit' in normalized_status:
+            elif (
+                'envio' in normalized_status
+                or 'enviado' in normalized_status
+                or 'kit' in normalized_status
+            ):
                 key = 'kit_enviado'
             else:
                 key = 'em_negociacao'
@@ -657,10 +669,16 @@ def get_projects():
         p_dict = dict(r)
         p_dict['influencer_count'] = inf_count
         p_dict['status_counts'] = status_counts
+
         projects.append(p_dict)
 
     conn.close()
-    return jsonify({"success": True, "projects": projects})
+
+    return jsonify({
+        "success": True,
+        "projects": projects
+    })
+    
 
 @app.route('/api/projects/create', methods=['POST'])
 def create_project():
