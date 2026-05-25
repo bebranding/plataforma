@@ -227,7 +227,7 @@ def init_db():
         pass
 
     cursor.execute("SELECT COUNT(*) FROM users")
-    if cursor.fetchone()[0] == 0:
+    if fetchone()['count'] == 0:
         cursor.execute("INSERT INTO users (username, password, role) VALUES ('admin', 'be.branding2026', 'master')")
 
     cursor.execute('''
@@ -527,9 +527,9 @@ def client_portal(project_id):
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     conn = get_db_connection()
-    total_influencers = conn.execute("SELECT COUNT(*) FROM influencers").fetchone()[0]
-    total_projects = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
-    total_reach = conn.execute("SELECT SUM(seguidores_ig) FROM influencers").fetchone()[0] or 0
+    total_influencers = conn.execute("SELECT COUNT(*) FROM influencers").fetchone()['count']
+    total_projects = conn.execute("SELECT COUNT(*) FROM projects").fetchone()['count']
+    total_reach = conn.execute("SELECT SUM(seguidores_ig) FROM influencers").fetchone()['count'] or 0
     conn.close()
     return jsonify({
         "success": True,
@@ -629,10 +629,14 @@ def get_projects():
 
     projects = []
     for r in rows:
-        inf_count = conn.execute("SELECT COUNT(*) FROM project_influencers WHERE project_id = ?", (r['id'],)).fetchone()[0]
+       count = conn.execute(
+    "SELECT COUNT(*) as count FROM influencers"
+).fetchone()['count']
 
         statuses = conn.execute('''
-            SELECT status, COUNT(*) as count
+            SELECT status, total_influencers = conn.execute(
+    "SELECT COUNT(*) as count FROM influencers"
+).fetchone()['count'] as count
             FROM project_influencers
             WHERE project_id = ?
             GROUP BY status
@@ -1324,7 +1328,7 @@ def add_user():
 @app.route('/api/users/delete/<int:u_id>', methods=['POST'])
 def delete_user(u_id):
     conn = get_db_connection()
-    total = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    total = conn.execute("SELECT COUNT(*) FROM users").fetchone()['count']
     if total <= 1:
         conn.close()
         return jsonify({"success": False, "error": "Não é possível remover o único usuário administrativo cadastrado."})
@@ -1361,7 +1365,7 @@ if __name__ == '__main__':
         conn = get_db_connection()
         count = conn.execute(
             "SELECT COUNT(*) FROM influencers"
-        ).fetchone()[0]
+        ).fetchone()['count']
         conn.close()
 
         # Auto import opcional
