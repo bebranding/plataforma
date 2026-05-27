@@ -59,7 +59,7 @@ import os
 import re
 import time
 import threading
-import sqlite3
+
 import requests
 import webbrowser
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
@@ -198,22 +198,14 @@ def init_db():
     )
     ''')
 
-    try:
-        cursor.execute("ALTER TABLE influencers ADD COLUMN endereco TEXT")
-    except psycopg2.Error:
-        pass
-    try:
-        cursor.execute("ALTER TABLE influencers ADD COLUMN cache TEXT")
-    except psycopg2.Error:
-        pass
-    try:
-        cursor.execute("ALTER TABLE project_influencers ADD COLUMN whatsapp TEXT")
-    except psycopg2.Error:
-        pass
-    try:
-        cursor.execute("ALTER TABLE project_influencers ADD COLUMN cache TEXT")
-    except psycopg2.Error:
-        pass
+    alter_statements = [
+        "ALTER TABLE influencers ADD COLUMN IF NOT EXISTS endereco TEXT",
+        "ALTER TABLE influencers ADD COLUMN IF NOT EXISTS cache TEXT",
+        "ALTER TABLE project_influencers ADD COLUMN IF NOT EXISTS whatsapp TEXT",
+        "ALTER TABLE project_influencers ADD COLUMN IF NOT EXISTS cache TEXT",
+    ]
+    for stmt in alter_statements:
+        cursor.execute(stmt)
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
@@ -223,14 +215,8 @@ def init_db():
     )
     ''')
 
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'master'")
-    except psycopg2.Error:
-        pass
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN project_id INTEGER")
-    except psycopg2.Error:
-        pass
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'master'")
+    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS project_id INTEGER")
 
     cursor.execute("SELECT COUNT(*) FROM users")
     if cursor.fetchone()[0] == 0:
@@ -744,8 +730,9 @@ def assign_influencer(project_id):
     conn = get_db_connection()
     try:
         conn.execute('''
-            INSERT OR IGNORE INTO project_influencers (project_id, influencer_id, status)
+            INSERT INTO project_influencers (project_id, influencer_id, status)
             VALUES (?, ?, 'A contatar')
+            ON CONFLICT (project_id, influencer_id) DO NOTHING
         ''', (project_id, influencer_id))
         conn.commit()
         conn.close()
@@ -1203,8 +1190,19 @@ def import_excel():
                         influencer_id = cursor.fetchone()["id"]
 
                     cursor.execute('''
-                        INSERT OR REPLACE INTO project_influencers (project_id, influencer_id, status, data_contato, resposta, end_confirmado, data_envio_kit, data_publicacao, link_reels, whatsapp, obs, cache)
+                        INSERT INTO project_influencers (project_id, influencer_id, status, data_contato, resposta, end_confirmado, data_envio_kit, data_publicacao, link_reels, whatsapp, obs, cache)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (project_id, influencer_id) DO UPDATE SET
+                            status = EXCLUDED.status,
+                            data_contato = EXCLUDED.data_contato,
+                            resposta = EXCLUDED.resposta,
+                            end_confirmado = EXCLUDED.end_confirmado,
+                            data_envio_kit = EXCLUDED.data_envio_kit,
+                            data_publicacao = EXCLUDED.data_publicacao,
+                            link_reels = EXCLUDED.link_reels,
+                            whatsapp = EXCLUDED.whatsapp,
+                            obs = EXCLUDED.obs,
+                            cache = EXCLUDED.cache
                     ''', (project_id, influencer_id, str(status) if status else 'A contatar', str(data_contato) if data_contato else None, str(resposta) if resposta else None, str(end_confirmado) if end_confirmado else None, str(data_envio) if data_envio else None, str(data_publicacao) if data_publicacao else None, str(link_reels) if link_reels else None, str(whatsapp) if whatsapp else None, str(obs) if obs else None, str(cache) if cache else None))
 
                     imported_count += 1
@@ -1359,8 +1357,13 @@ def change_password():
     conn.close()
     return jsonify({"success": True, "message": "Senha atualizada com sucesso!"})
 
-if __name__ == '__main__':
+# Initialize database on module load (works with both gunicorn and direct run)
+try:
     init_db()
+except Exception as e:
+    print(f"Warning: Could not initialize database: {e}")
+
+if __name__ == '__main__':
 
     conn = get_db_connection()
     count = conn.execute("SELECT COUNT(*) FROM influencers").fetchone()[0]
